@@ -1,0 +1,22 @@
+body {
+  padding: 10px;
+  font-family: sans-serif;
+}
+
+.app-bar > .app-title {
+  text-align: center;
+}
+
+.user-buttons {
+  display: flex;
+  justify-content: center;
+  width: 396px;
+}
+
+.user-buttons > Button {
+  width: 100px;
+}
+
+.user-buttons > Button:nth-child(2) {
+  margin-left: 10px;
+}
