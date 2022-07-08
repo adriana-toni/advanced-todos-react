@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Meteor } from 'meteor/meteor';
+import { Outlet, useNavigate } from 'react-router-dom';
 
 import Header from './Header';
 
@@ -8,6 +10,10 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
+import Stack from '@mui/material/Stack';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 const sexList = [
   {
@@ -21,10 +27,88 @@ const sexList = [
 ];
 
 export default function UserForm() {
+  // User's full name
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
   const [sex, setSex] = useState('');
+  const [company, setCompany] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+
+  let navigate = useNavigate();
+
+  const handleChangeName = event => {
+    setName(event.target.value);
+  };
+
+  const handleChangeUsername = event => {
+    setUsername(event.target.value);
+  };
+
+  const handleChangePassword = event => {
+    setPassword(event.target.value);
+  };
 
   const handleChangeSex = event => {
     setSex(event.target.value);
+  };
+
+  const handleChangeEmail = event => {
+    setEmail(event.target.value);
+  };
+
+  const handleChangeBirthDate = newValue => {
+    setBirthDate(newValue);
+  };
+
+  const handleChangeCompany = event => {
+    setCompany(event.target.value);
+  };
+
+  const onClickSignUp = event => {
+    event.preventDefault();
+
+    console.log('UserForm onClickSignUp');
+    console.log(
+      `name: ${name} username: ${username} birthDate: ${birthDate} sex: ${sex} email: ${email} company: ${company}`
+    );
+
+    /* Inicializando o usuário com os dados informados */
+    var options = {
+      username: username,
+      emails: [
+        {
+          address: email,
+          verified: false,
+        },
+      ],
+      password: password,
+      profile: {
+        name: name,
+        birthDate: birthDate,
+        sex: sex,
+        company: company,
+      },
+    };
+
+    Meteor.call('accounts.createUser', options, function (error) {
+      /* console.log(error); */
+      if (error) {
+        console.log(`Erro ao tentar criar um novo usuário: ${error.reason}`);
+      } else {
+        console.log(`Usuário ${username} criado com sucesso!`);
+        const user = Meteor.call('accounts.findUserByUsername', username);
+        if (user) {
+          navigate('/tasks');
+        }
+      }
+    });
+  };
+
+  const onClickCancelButton = event => {
+    console.log('UserForm onClickCancelButton');
+    navigate('/');
   };
 
   return (
@@ -42,14 +126,28 @@ export default function UserForm() {
           }}
           noValidate
           autoComplete="off"
+          onSubmit={onClickSignUp}
         >
           <div>
             <TextField
               required
               id="outlined-basic-name"
               label="Name"
+              type="text"
               fullWidth
               variant="outlined"
+              value={name}
+              onChange={handleChangeName}
+            />
+            <TextField
+              required
+              id="outlined-basic-username"
+              label="Username"
+              type="text"
+              fullWidth
+              variant="outlined"
+              value={username}
+              onChange={handleChangeUsername}
             />
             <TextField
               required
@@ -58,6 +156,8 @@ export default function UserForm() {
               type="password"
               autoComplete="current-password"
               fullWidth
+              value={password}
+              onChange={handleChangePassword}
             />
             <TextField
               required
@@ -65,13 +165,23 @@ export default function UserForm() {
               label="e-mail"
               variant="outlined"
               fullWidth
+              value={email}
+              onChange={handleChangeEmail}
             />
-            <TextField
-              id="outlined-basic-date"
-              label="Birth date"
-              variant="outlined"
-              fullWidth
-            />
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <Stack spacing={3}>
+                <DatePicker
+                  id="outlined-birth-date"
+                  label="Birth Date"
+                  inputFormat="dd/MM/yyyy"
+                  views={['day', 'month', 'year']}
+                  mask="__/__/____"
+                  value={birthDate}
+                  onChange={handleChangeBirthDate}
+                  renderInput={params => <TextField {...params} />}
+                />
+              </Stack>
+            </LocalizationProvider>
             <TextField
               id="outlined-select-sex"
               fullWidth
@@ -93,9 +203,15 @@ export default function UserForm() {
               label="Company"
               variant="outlined"
               fullWidth
+              value={company}
+              onChange={handleChangeCompany}
             />
             <div className="user-buttons">
-              <Button type="submit" variant="contained">
+              <Button
+                type="button"
+                variant="contained"
+                onClick={onClickCancelButton}
+              >
                 Cancel
               </Button>
               <Button type="submit" variant="contained">
@@ -105,6 +221,23 @@ export default function UserForm() {
           </div>
         </Box>
       </Container>
+      <Outlet />
     </>
   );
 }
+
+/*
+  const onClickSignUp = event => {
+    console.log('onClickSignUp'); 
+       console.log(username);
+       console.log(password);
+    
+       Meteor.call('accounts.createUser', username, password, function (error) {
+        console.log(error); 
+        if (error) {
+          console.log(`Erro ao tentar criar um novo usuário: ${error.reason}`);
+        } else {
+          console.log(`Usuário ${username} criado com sucesso!`);
+        }
+      });
+*/

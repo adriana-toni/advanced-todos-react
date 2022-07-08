@@ -1,13 +1,13 @@
 import React from 'react';
+import { useTracker } from 'meteor/react-meteor-data';
 
 // Configuração de Links para as rotas
 import { Outlet } from 'react-router-dom';
 
-// Estilização
-import Container from '@material-ui/core/Container';
-
+// Telas da aplicação
 import LoginForm from '/imports/ui/LoginForm';
 import Header from './Header';
+import { TasksForm } from './TasksForm';
 
 /* Antes - sem rotas
 export const App = () => {
@@ -30,12 +30,22 @@ export const App = () => {
 
 /* Depois - com Rotas */
 export default function App() {
+  const user = useTracker(() => Meteor.user());
+  console.log('App');
+  console.log(user);
+
   return (
     <>
       <Header>📝️ Meteor Advanced To-Do List with React!</Header>
-      <Container>
-        <LoginForm />
-      </Container>
+      {user ? (
+        <>
+          <TasksForm />
+        </>
+      ) : (
+        <>
+          <LoginForm />
+        </>
+      )}
       <Outlet />
     </>
   );

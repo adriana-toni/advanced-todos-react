@@ -9,6 +9,7 @@ import { TasksForm } from '../ui/TasksForm';
 import UserForm from '../ui/UserForm';
 
 Meteor.startup(() => {
+  console.log('startup Lado Cliente');
   /* render(<App />, document.getElementById('react-target')); */
   render(
     <Router>

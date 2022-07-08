@@ -1,5 +1,7 @@
-import React from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Meteor } from 'meteor/meteor';
+
+import { NavLink } from 'react-router-dom';
 
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -32,16 +34,33 @@ function Copyright(props) {
 const theme = createTheme();
 
 export default function LoginForm() {
-  /*  
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = event => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+
+    console.log('App handleSubmit');
   };
-*/
+
+  const handleChangeUsername = event => {
+    /*console.log(event.target.value); */
+    setUsername(event.target.value);
+  };
+
+  const handleChangePassword = event => {
+    /* console.log(event.target.value); */
+    setPassword(event.target.value);
+  };
+
+  const onClickButtonSignIn = event => {
+    console.log('LoginForm onClickButtonSignIn');
+    const user = Meteor.call('accounts.findUserByUsername', username);
+    console.log(user);
+    if (user) {
+      navigate('/tasks');
+    }
+  };
 
   return (
     <>
@@ -64,7 +83,7 @@ export default function LoginForm() {
             </Typography>
             <Box
               component="form"
-              // onSubmit={handleSubmit}
+              onSubmit={handleSubmit}
               noValidate
               sx={{ mt: 1 }}
             >
@@ -72,11 +91,12 @@ export default function LoginForm() {
                 margin="normal"
                 required
                 fullWidth
-                id="email"
-                label="Email Address"
-                name="email"
-                autoComplete="email"
+                id="username"
+                label="Username"
+                name="username"
+                autoComplete="current-username"
                 autoFocus
+                onChange={handleChangeUsername}
               />
               <TextField
                 margin="normal"
@@ -87,16 +107,18 @@ export default function LoginForm() {
                 type="password"
                 id="password"
                 autoComplete="current-password"
+                onChange={handleChangePassword}
               />
               <FormControlLabel
                 control={<Checkbox value="remember" color="primary" />}
                 label="Remember me"
               />
               <Button
-                type="submit"
+                type="button"
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
+                onClick={onClickButtonSignIn}
               >
                 Sign In
               </Button>
@@ -117,7 +139,6 @@ export default function LoginForm() {
           <Copyright sx={{ mt: 8, mb: 4 }} />
         </Container>
       </ThemeProvider>
-      <Outlet />
     </>
   );
 }
