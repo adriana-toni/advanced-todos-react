@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Meteor } from 'meteor/meteor';
 import { Outlet, useNavigate } from 'react-router-dom';
+
+import { Meteor } from 'meteor/meteor';
 
 import Header from './Header';
 
@@ -69,13 +70,15 @@ export default function UserForm() {
   const onClickSignUp = event => {
     event.preventDefault();
 
+    /*
     console.log('UserForm onClickSignUp');
     console.log(
       `name: ${name} username: ${username} birthDate: ${birthDate} sex: ${sex} email: ${email} company: ${company}`
     );
+    */
 
     /* Inicializando o usuário com os dados informados */
-    var options = {
+    var newUser = {
       username: username,
       emails: [
         {
@@ -92,22 +95,33 @@ export default function UserForm() {
       },
     };
 
-    Meteor.call('accounts.createUser', options, function (error) {
+    Meteor.call('accounts.createUser', newUser, function (error) {
       /* console.log(error); */
       if (error) {
         console.log(`Erro ao tentar criar um novo usuário: ${error.reason}`);
       } else {
         console.log(`Usuário ${username} criado com sucesso!`);
-        const user = Meteor.call('accounts.findUserByUsername', username);
-        if (user) {
-          navigate('/tasks');
-        }
+        Meteor.loginWithPassword(
+          newUser.username,
+          newUser.password,
+          function (error) {
+            if (error) {
+              console.log(error);
+              console.log(`Erro ao realizar o login do novo usuário: ${error}`);
+            } else {
+              console.log(
+                `Login do usuário ${username} realizado com sucesso!`
+              );
+              navigate('/tasks');
+            }
+          }
+        );
       }
     });
   };
 
   const onClickCancelButton = event => {
-    console.log('UserForm onClickCancelButton');
+    /* console.log('UserForm onClickCancelButton'); */
     navigate('/');
   };
 
@@ -225,19 +239,3 @@ export default function UserForm() {
     </>
   );
 }
-
-/*
-  const onClickSignUp = event => {
-    console.log('onClickSignUp'); 
-       console.log(username);
-       console.log(password);
-    
-       Meteor.call('accounts.createUser', username, password, function (error) {
-        console.log(error); 
-        if (error) {
-          console.log(`Erro ao tentar criar um novo usuário: ${error.reason}`);
-        } else {
-          console.log(`Usuário ${username} criado com sucesso!`);
-        }
-      });
-*/

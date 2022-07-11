@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import { Meteor } from 'meteor/meteor';
 
+// Configuração de Links para as rotas
 import { NavLink } from 'react-router-dom';
 
 import Avatar from '@mui/material/Avatar';
@@ -34,13 +37,16 @@ function Copyright(props) {
 const theme = createTheme();
 
 export default function LoginForm() {
+  console.log('Renderizando LoginForm');
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = event => {
-    event.preventDefault();
+  let navigate = useNavigate();
 
-    console.log('App handleSubmit');
+  const handleSubmit = event => {
+    /* console.log('App handleSubmit'); */
+    event.preventDefault();
   };
 
   const handleChangeUsername = event => {
@@ -55,13 +61,23 @@ export default function LoginForm() {
 
   const onClickButtonSignIn = event => {
     console.log('LoginForm onClickButtonSignIn');
-    const user = Meteor.call('accounts.findUserByUsername', username);
-    console.log(user);
-    if (user) {
-      navigate('/tasks');
+
+    if (username) {
+      console.log(`username ${username} password ${password}`);
+      // O problema está aqui
+      Meteor.loginWithPassword(username, password, function (error) {
+        console.log(error);
+        if (error) {
+          console.log(
+            `Erro ao tentar realizar o login do usuário: ${error.reason}`
+          );
+        } else {
+          console.log(`Login do usuário ${username} realizado com sucesso!`);
+          navigate('/tasks');
+        }
+      });
     }
   };
-
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -129,7 +145,7 @@ export default function LoginForm() {
                   </Link>
                 </Grid>
                 <Grid item>
-                  <NavLink to="/user">
+                  <NavLink to="user">
                     {"Don't have an account? Sign Up"}
                   </NavLink>
                 </Grid>
