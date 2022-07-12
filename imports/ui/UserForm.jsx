@@ -15,6 +15,9 @@ import Stack from '@mui/material/Stack';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import Avatar from '@mui/material/Avatar';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import IconButton from '@mui/material/IconButton';
 
 const sexList = [
   {
@@ -36,6 +39,7 @@ export default function UserForm() {
   const [sex, setSex] = useState('');
   const [company, setCompany] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [photouser, setPhotoUser] = useState('');
 
   let navigate = useNavigate();
 
@@ -67,6 +71,32 @@ export default function UserForm() {
     setCompany(event.target.value);
   };
 
+  const handleUploadClick = async event => {
+    console.log('handleUploadClick');
+    console.log(event.target.files);
+
+    const photoFile = event.target.files[0];
+    const base64 = await convertBase64(photoFile);
+    console.log(base64);
+
+    setPhotoUser(base64);
+  };
+
+  const convertBase64 = photoFile => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(photoFile);
+
+      fileReader.onload = () => {
+        resolve(fileReader.result);
+      };
+
+      fileReader.onerror = error => {
+        reject(error);
+      };
+    });
+  };
+
   const onClickSignUp = event => {
     event.preventDefault();
 
@@ -92,6 +122,7 @@ export default function UserForm() {
         birthDate: birthDate,
         sex: sex,
         company: company,
+        photouser: photouser,
       },
     };
 
@@ -142,97 +173,116 @@ export default function UserForm() {
           autoComplete="off"
           onSubmit={onClickSignUp}
         >
-          <div>
-            <TextField
-              required
-              id="outlined-basic-name"
-              label="Name"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={name}
-              onChange={handleChangeName}
+          <div className="photo-perfil">
+            <input
+              accept="image/*"
+              id="icon-button-photo-perfil"
+              type="file"
+              style={{ display: 'none' }}
+              onChange={handleUploadClick}
             />
-            <TextField
-              required
-              id="outlined-basic-username"
-              label="Username"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={username}
-              onChange={handleChangeUsername}
-            />
-            <TextField
-              required
-              id="outlined-password-input"
-              label="Password"
-              type="password"
-              autoComplete="current-password"
-              fullWidth
-              value={password}
-              onChange={handleChangePassword}
-            />
-            <TextField
-              required
-              id="outlined-basic-email"
-              label="e-mail"
-              variant="outlined"
-              fullWidth
-              value={email}
-              onChange={handleChangeEmail}
-            />
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <Stack spacing={3}>
-                <DatePicker
-                  id="outlined-birth-date"
-                  label="Birth Date"
-                  inputFormat="dd/MM/yyyy"
-                  views={['day', 'month', 'year']}
-                  mask="__/__/____"
-                  value={birthDate}
-                  onChange={handleChangeBirthDate}
-                  renderInput={params => <TextField {...params} />}
-                />
-              </Stack>
-            </LocalizationProvider>
-            <TextField
-              id="outlined-select-sex"
-              fullWidth
-              select
-              label="Sex"
-              value={sex}
-              onChange={handleChangeSex}
-              helperText="Please select your sex"
-            >
-              {sexList.map(option => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              required
-              id="outlined-basic-company"
-              label="Company"
-              variant="outlined"
-              fullWidth
-              value={company}
-              onChange={handleChangeCompany}
-            />
-            <div className="user-buttons">
-              <Button
-                type="button"
-                variant="contained"
-                onClick={onClickCancelButton}
+            <label htmlFor="icon-button-photo-perfil">
+              <IconButton
+                color="primary"
+                aria-label="upload photo perfil"
+                component="span"
               >
-                Cancel
-              </Button>
-              <Button type="submit" variant="contained">
-                Save
-              </Button>
-            </div>
+                {photouser ? (
+                  <Avatar alt="Foto do perfil do usuário" src={photouser} />
+                ) : (
+                  <AccountCircleOutlinedIcon sx={{ fontSize: 50 }} />
+                )}
+              </IconButton>
+            </label>
           </div>
+          <TextField
+            required
+            id="outlined-basic-name"
+            label="Name"
+            type="text"
+            variant="outlined"
+            value={name}
+            onChange={handleChangeName}
+          />
+          <TextField
+            required
+            id="outlined-basic-username"
+            label="Username"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={username}
+            onChange={handleChangeUsername}
+          />
+          <TextField
+            required
+            id="outlined-password-input"
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            fullWidth
+            value={password}
+            onChange={handleChangePassword}
+          />
+          <TextField
+            required
+            id="outlined-basic-email"
+            label="e-mail"
+            variant="outlined"
+            fullWidth
+            value={email}
+            onChange={handleChangeEmail}
+          />
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <Stack spacing={3}>
+              <DatePicker
+                id="outlined-birth-date"
+                label="Birth Date"
+                inputFormat="dd/MM/yyyy"
+                views={['day', 'month', 'year']}
+                mask="__/__/____"
+                value={birthDate}
+                onChange={handleChangeBirthDate}
+                renderInput={params => <TextField {...params} />}
+              />
+            </Stack>
+          </LocalizationProvider>
+          <TextField
+            id="outlined-select-sex"
+            fullWidth
+            select
+            label="Sex"
+            value={sex}
+            onChange={handleChangeSex}
+            helperText="Please select your sex"
+          >
+            {sexList.map(option => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            required
+            id="outlined-basic-company"
+            label="Company"
+            variant="outlined"
+            fullWidth
+            value={company}
+            onChange={handleChangeCompany}
+          />
+          <Container className="user-buttons">
+            <Button
+              type="button"
+              variant="contained"
+              onClick={onClickCancelButton}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" variant="contained">
+              Save
+            </Button>
+          </Container>
         </Box>
       </Container>
       <Outlet />

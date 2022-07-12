@@ -7,6 +7,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import App from '../ui/App';
 import TasksForm from '../ui/TasksForm';
 import UserForm from '../ui/UserForm';
+import EditTaskForm from '../ui/EditTaskForm';
+import Task from '../ui/Task';
 
 Meteor.startup(() => {
   console.log('startup Lado Cliente');
@@ -16,7 +18,10 @@ Meteor.startup(() => {
     <Router>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="tasks" element={<TasksForm />} />
+        <Route path="tasks" element={<TasksForm />}>
+          <Route path="edit" element={<EditTaskForm />} />
+          <Route path="task" element={<Task />} />
+        </Route>
         <Route path="user" element={<UserForm />} />
       </Routes>
     </Router>,
