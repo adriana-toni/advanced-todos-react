@@ -60,4 +60,22 @@ Meteor.methods({
       },
     });
   },
+
+  'tasks.findTaskUser'(taskId) {
+    console.log('inside method: tasks.findTaskUser');
+    check(taskId, String);
+
+    if (!this.userId) {
+      throw new Meteor.Error('Not authorized.');
+    }
+
+    // Check if the user that is authenticated is the same user that created the tasks.
+    const task = TasksCollection.findOne({ _id: taskId, userId: this.userId });
+    if (!task) {
+      throw new Meteor.Error('Access denied.');
+    }
+    console.log('inside method: task');
+    console.log(task);
+    return task;
+  },
 });

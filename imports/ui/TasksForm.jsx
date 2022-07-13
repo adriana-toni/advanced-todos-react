@@ -32,9 +32,12 @@ export default function TasksForm() {
   console.log('Renderizando TaskForm');
   const user = useTracker(() => Meteor.user());
 
+  /*
   if (user) {
+    console.log('TaskForm: User ');
     console.log(user);
   }
+  */
 
   let navigate = useNavigate();
 
@@ -44,6 +47,7 @@ export default function TasksForm() {
     Meteor.logout();
   };
 
+  // Filtro de pesquisa de tarefa
   const userFilter = user ? { userId: user._id } : {};
 
   const { tasks, pendingTasksCount, isLoading } = useTracker(() => {
@@ -55,27 +59,43 @@ export default function TasksForm() {
 
     // Allows the client code to ask for data to the client.
     const handler = Meteor.subscribe('tasks');
+    /*
+    console.log('Subscribe');
+    console.log(handler);
+    */
 
     if (!handler.ready()) {
+      // console.log('handler is not ready!');
       return { ...noDataAvailable, isLoading: true };
     }
 
-    const tasks = TasksCollection.find(
-      {
-        userFilter,
-      },
-      { sort: { createdAt: -1 } }
-    ).fetch();
+    const tasks = TasksCollection.find(userFilter, {
+      sort: { createdAt: -1 },
+    }).fetch();
 
     const pendingTasksCount = TasksCollection.find(userFilter).count();
+    /*
     console.log(`userFilter`);
     console.log(userFilter);
     console.log(`pendingTasksCount ${pendingTasksCount}`);
     console.log(`tasks`);
     console.log(tasks);
-
+    */
     return { tasks, pendingTasksCount };
   });
+
+  const onClickButtonEdit = task => {
+    console.log('TaskForm onClickButtonEdit');
+    //console.log(task);
+    navigate(`/tasks/edit/${task._id}`);
+  };
+
+  const onClickButtonDelete = task => {
+    console.log('TaskForm onDeleteButtonEdit');
+    console.log(task);
+
+    Meteor.call('tasks.remove', task._id);
+  };
 
   return (
     <>
@@ -85,6 +105,9 @@ export default function TasksForm() {
           pendingTasksCount != 0 ? (
             <>
               {isLoading && <Loading />}
+              <Typography variant="h6" color="textPrimary" align="center">
+                Tarefas Cadastradas
+              </Typography>
               <List
                 sx={{
                   width: '100%',
@@ -93,7 +116,13 @@ export default function TasksForm() {
                 }}
               >
                 {tasks.map(task => (
-                  <Task key={task._id} task={task} />
+                  <Task
+                    key={task._id}
+                    task={task}
+                    user={user}
+                    onEditClick={onClickButtonEdit}
+                    onDeleteClick={onClickButtonDelete}
+                  />
                 ))}
               </List>
             </>

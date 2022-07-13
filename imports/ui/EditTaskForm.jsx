@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import { useTracker } from 'meteor/react-meteor-data';
+
+import '/imports/api/tasksMethods';
 
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -9,10 +13,55 @@ import Button from '@mui/material/Button';
 
 export default function EditTaskForm() {
   console.log('Renderizando EditTaskForm');
+  const user = useTracker(() => Meteor.user());
 
-  // const title = children ? `Editar Tarefa: ${children}` : 'Incluir Tarefa';
-  const title = 'Incluir Tarefa';
-  const createdDate = '';
+  let taskId;
+  let params = useParams();
+  if (params) {
+    console.log('Edit Task Params');
+    taskId = params.taskId;
+  }
+
+  let title = 'Incluir Tarefa';
+  let createdDate = '';
+
+  const { task, isLoadingTask } = useTracker(() => {
+    console.log('EditTaskForm -  { tasks, isLoadingTask } = useTracker');
+
+    const noDataAvailable = { task: [] };
+
+    if (!user) {
+      return noDataAvailable;
+    }
+
+    // Allows the client code to ask for data to the client.
+    const handler = Meteor.subscribe('tasks');
+
+    if (!handler.ready()) {
+      console.log('handler is not ready!');
+      return { ...noDataAvailable, isLoadingTask: true };
+    }
+
+    // Production environment - Chamada assíncrona
+    Meteor.call('tasks.findTaskUser', taskId, (error, result) => {
+      console.log('EditTaskForm - Chamada assíncrona tasks.findTaskUser');
+      if (error) {
+        console.log(error);
+        return noDataAvailable;
+      } else {
+        title = `Editar Tarefa: ${result.text}`;
+        createdDate = result.createdAt;
+        return result;
+      }
+    });
+  });
+  if (task) {
+    console.log('Tarefa recuperada');
+    console.log(task);
+  }
+
+  console.log(`title: ${title}`);
+  console.log(`createdDate: ${createdDate}`);
 
   const [nameTask, setNameTask] = useState('');
   const [descriptionTask, setDescriptionTask] = useState('');
@@ -42,7 +91,6 @@ export default function EditTaskForm() {
 
     // Production environment
     Meteor.call('tasks.insert', nameTask, descriptionTask);
-
     navigate('/tasks');
   };
 

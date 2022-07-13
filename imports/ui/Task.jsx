@@ -1,28 +1,42 @@
 import React from 'react';
 
+import Card from '@mui/material/Card';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Avatar from '@mui/material/Avatar';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 
-export default function Task({ task }) {
+export default function Task({ task, user, onEditClick, onDeleteClick }) {
   console.log('Renderizando Task');
-  console.log(task);
 
-  const titleTask = `${task.createdAt} - ${task.text}`;
-  const userTask = task.userId;
+  const timeTask = `${task.createdAt
+    .getHours()
+    .toString()
+    .padStart(2, '0')}:${task.createdAt.getMinutes()} `;
+  const titleTask = `${timeTask} - ${task.text}`;
 
   return (
     <>
-      <ListItem>
-        <ListItemAvatar>
-          <Avatar>
-            <AssignmentOutlinedIcon />
-          </Avatar>
-        </ListItemAvatar>
-        <ListItemText primary={titleTask} secondary={userTask} />
-      </ListItem>
+      <Card>
+        <ListItem>
+          <ListItemAvatar>
+            <Avatar>
+              <AssignmentOutlinedIcon />
+            </Avatar>
+          </ListItemAvatar>
+          <ListItemText primary={titleTask} secondary={user.username} />
+          <IconButton aria-label="delete" onClick={() => onDeleteClick(task)}>
+            <DeleteIcon />
+          </IconButton>
+          <IconButton aria-label="edit" onClick={() => onEditClick(task)}>
+            <EditIcon />
+          </IconButton>
+        </ListItem>
+      </Card>
     </>
   );
 }
