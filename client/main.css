@@ -10,13 +10,6 @@ body {
 .photo-perfil {
   display: flex;
   justify-content: center;
-  width: 396px;
-}
-
-.user-buttons {
-  display: flex;
-  justify-content: center;
-  width: 396px;
 }
 
 .user-buttons > Button {

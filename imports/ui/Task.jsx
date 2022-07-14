@@ -10,13 +10,12 @@ import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 
+import { getTimeFrom } from '/imports/helpers/dateHelpers';
+
 export default function Task({ task, user, onEditClick, onDeleteClick }) {
   console.log('Renderizando Task');
 
-  const timeTask = `${task.createdAt
-    .getHours()
-    .toString()
-    .padStart(2, '0')}:${task.createdAt.getMinutes()} `;
+  const timeTask = getTimeFrom(task.createdAt);
   const titleTask = `${timeTask} - ${task.text}`;
 
   return (

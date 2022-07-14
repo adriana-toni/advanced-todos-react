@@ -18,6 +18,8 @@ import Header from './Header';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import Container from '@mui/material/Container';
+import IconButton from '@mui/material/IconButton';
+import AddTaskOutlinedIcon from '@mui/icons-material/AddTaskOutlined';
 
 function Welcome({ sx, children: username }) {
   /* console.log('Welcome'); */
@@ -47,9 +49,6 @@ export default function TasksForm() {
     Meteor.logout();
   };
 
-  // Filtro de pesquisa de tarefa
-  const userFilter = user ? { userId: user._id } : {};
-
   const { tasks, pendingTasksCount, isLoading } = useTracker(() => {
     const noDataAvailable = { tasks: [], pendingTasksCount: 0 };
 
@@ -58,7 +57,13 @@ export default function TasksForm() {
     }
 
     // Allows the client code to ask for data to the client.
-    const handler = Meteor.subscribe('tasks');
+    const publishType = 'allTasks';
+
+    // Filtro de pesquisa de tarefa
+    const userFilter =
+      user && publishType != 'allTasks' ? { userId: user._id } : {};
+
+    const handler = Meteor.subscribe(publishType);
     /*
     console.log('Subscribe');
     console.log(handler);
@@ -69,6 +74,7 @@ export default function TasksForm() {
       return { ...noDataAvailable, isLoading: true };
     }
 
+    // Return data according of publishType
     const tasks = TasksCollection.find(userFilter, {
       sort: { createdAt: -1 },
     }).fetch();
@@ -84,10 +90,15 @@ export default function TasksForm() {
     return { tasks, pendingTasksCount };
   });
 
+  const onAddButtonEdit = () => {
+    console.log('TaskForm onAddButtonEdit');
+    navigate(`/edit`);
+  };
+
   const onClickButtonEdit = task => {
     console.log('TaskForm onClickButtonEdit');
     //console.log(task);
-    navigate(`/tasks/edit/${task._id}`);
+    navigate(`/edit/${task._id}`);
   };
 
   const onClickButtonDelete = task => {
@@ -107,11 +118,18 @@ export default function TasksForm() {
               {isLoading && <Loading />}
               <Typography variant="h6" color="textPrimary" align="center">
                 Tarefas Cadastradas
+                <IconButton
+                  aria-label="addTask"
+                  onClick={onAddButtonEdit}
+                  sx={{ marginLeft: '10px' }}
+                >
+                  <AddTaskOutlinedIcon />
+                </IconButton>
               </Typography>
               <List
                 sx={{
                   width: '100%',
-                  maxWidth: 360,
+                  maxWidth: 400,
                   bgcolor: 'background.paper',
                 }}
               >

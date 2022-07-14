@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useTracker } from 'meteor/react-meteor-data';
 
-import '/imports/api/tasksMethods';
+import { TasksCollection } from '/imports/db/TasksCollection';
+
+import Header from './Header';
 
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+
+import Loading from '/imports/ui/Loading';
+import { getDateTimeFrom } from '/imports/helpers/dateHelpers';
 
 export default function EditTaskForm() {
   console.log('Renderizando EditTaskForm');
@@ -22,15 +27,17 @@ export default function EditTaskForm() {
     taskId = params.taskId;
   }
 
-  let title = 'Incluir Tarefa';
-  let createdDate = '';
+  const [nameTask, setNameTask] = useState('');
+  const [descriptionTask, setDescriptionTask] = useState('');
+  const [creadtedDateTask, setCreatedDateTask] = useState('');
+  const [title, setTitle] = useState('Incluir Tarefa');
 
   const { task, isLoadingTask } = useTracker(() => {
-    console.log('EditTaskForm -  { tasks, isLoadingTask } = useTracker');
+    console.log('EditTaskForm - { task, isLoadingTask } = useTracker');
 
-    const noDataAvailable = { task: [] };
+    const noDataAvailable = { task: {} };
 
-    if (!user) {
+    if (!user && !taskId) {
       return noDataAvailable;
     }
 
@@ -42,29 +49,39 @@ export default function EditTaskForm() {
       return { ...noDataAvailable, isLoadingTask: true };
     }
 
-    // Production environment - Chamada assíncrona
-    Meteor.call('tasks.findTaskUser', taskId, (error, result) => {
-      console.log('EditTaskForm - Chamada assíncrona tasks.findTaskUser');
-      if (error) {
-        console.log(error);
-        return noDataAvailable;
-      } else {
-        title = `Editar Tarefa: ${result.text}`;
-        createdDate = result.createdAt;
-        return result;
-      }
+    const taskFilter = { _id: taskId };
+
+    // Production environment - Chamada síncrona
+    const task = TasksCollection.findOne(taskFilter, {
+      sort: { createdAt: -1 },
     });
+    // console.log('Tarefa recuperada');
+    // console.log(task);
+
+    return { task };
   });
-  if (task) {
-    console.log('Tarefa recuperada');
-    console.log(task);
-  }
 
+  useEffect(() => {
+    console.log(`inside EditTaskForm - useEffect`);
+
+    const selectedTitle = !task
+      ? 'Incluir Tarefa'
+      : `Editar Tarefa: ${task.text}`;
+    setTitle(selectedTitle);
+
+    if (task) {
+      setNameTask(task.text);
+      setDescriptionTask(task.description);
+      setCreatedDateTask(getDateTimeFrom(task.createdAt));
+    }
+  }, [task]);
+
+  /*
   console.log(`title: ${title}`);
-  console.log(`createdDate: ${createdDate}`);
-
-  const [nameTask, setNameTask] = useState('');
-  const [descriptionTask, setDescriptionTask] = useState('');
+  console.log(`creadtedDate: ${creadtedDateTask}`);
+  console.log(`task: ${nameTask}`);
+  console.log(`description: ${descriptionTask}`);
+  */
 
   let navigate = useNavigate();
 
@@ -83,58 +100,74 @@ export default function EditTaskForm() {
     navigate('/tasks');
   };
 
-  const onClickSave = event => {
+  const onClickSaveButton = event => {
     console.log('EditTaskForm onClickCancelButton');
     event.preventDefault();
 
     if (!nameTask) return;
 
     // Production environment
-    Meteor.call('tasks.insert', nameTask, descriptionTask);
+    if (!task) {
+      Meteor.call('tasks.insert', nameTask, descriptionTask);
+    } else {
+      Meteor.call('tasks.update', taskId, nameTask, descriptionTask);
+    }
     navigate('/tasks');
   };
 
   return (
     <>
       <Container component="main" maxWidth="xs">
-        <Typography component="h1" variant="h5" align="center">
+        <Typography
+          component="h1"
+          variant="h5"
+          align="center"
+          sx={{ width: '400px' }}
+        >
           {title}
         </Typography>
 
         <Box
           component="form"
           sx={{
-            '& .MuiTextField-root': { m: 1, width: '396px' },
+            '& .MuiTextField-root': { m: 1, width: '400px' },
           }}
           noValidate
           autoComplete="off"
-          onSubmit={onClickSave}
         >
+          {isLoadingTask && <Loading />}
           <TextField
             required
-            id="outlined-basic-task"
+            id="outlined-basic-text-task"
             label="Task"
             type="text"
             variant="outlined"
             value={nameTask}
             onChange={handleChangeNameTask}
+            fullWidth
           />
           <TextField
             required
-            id="outlined-basic-task"
+            id="outlined-basic-description-task"
             label="Description"
             type="text"
             variant="outlined"
             value={descriptionTask}
             onChange={handleChangeDescriptionTask}
+            fullWidth
           />
           <TextField
             id="outlined-createdAt-disable-input"
             label="Date"
-            defaultValue={createdDate}
+            defaultValue={creadtedDateTask}
             disabled
+            fullWidth
           />
-          <Container className="user-buttons">
+          <Container
+            className="user-buttons"
+            maxWidth="xs"
+            sx={{ display: 'flex', justifyContent: 'center', width: '400px' }}
+          >
             <Button
               type="button"
               variant="contained"
@@ -142,7 +175,11 @@ export default function EditTaskForm() {
             >
               Cancel
             </Button>
-            <Button type="submit" variant="contained">
+            <Button
+              type="button"
+              variant="contained"
+              onClick={onClickSaveButton}
+            >
               Save
             </Button>
           </Container>

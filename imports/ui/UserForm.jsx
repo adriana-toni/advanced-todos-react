@@ -159,7 +159,7 @@ export default function UserForm() {
   return (
     <>
       <Header>📝️ Meteor Advanced To-Do List with React!</Header>
-      <Container component="main" maxWidth="xs">
+      <Container component="main" maxWidth="md">
         <Typography component="h1" variant="h5" align="center">
           User Registration
         </Typography>
@@ -167,121 +167,139 @@ export default function UserForm() {
         <Box
           component="form"
           sx={{
-            '& .MuiTextField-root': { m: 1, width: '396px' },
+            '& .MuiTextField-root': { m: 1, width: '400px' },
           }}
           noValidate
           autoComplete="off"
           onSubmit={onClickSignUp}
         >
-          <div className="photo-perfil">
-            <input
-              accept="image/*"
-              id="icon-button-photo-perfil"
-              type="file"
-              style={{ display: 'none' }}
-              onChange={handleUploadClick}
-            />
-            <label htmlFor="icon-button-photo-perfil">
-              <IconButton
-                color="primary"
-                aria-label="upload photo perfil"
-                component="span"
-              >
-                {photouser ? (
-                  <Avatar alt="Foto do perfil do usuário" src={photouser} />
-                ) : (
-                  <AccountCircleOutlinedIcon sx={{ fontSize: 50 }} />
-                )}
-              </IconButton>
-            </label>
-          </div>
-          <TextField
-            required
-            id="outlined-basic-name"
-            label="Name"
-            type="text"
-            variant="outlined"
-            value={name}
-            onChange={handleChangeName}
-          />
-          <TextField
-            required
-            id="outlined-basic-username"
-            label="Username"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={username}
-            onChange={handleChangeUsername}
-          />
-          <TextField
-            required
-            id="outlined-password-input"
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-            fullWidth
-            value={password}
-            onChange={handleChangePassword}
-          />
-          <TextField
-            required
-            id="outlined-basic-email"
-            label="e-mail"
-            variant="outlined"
-            fullWidth
-            value={email}
-            onChange={handleChangeEmail}
-          />
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <Stack spacing={3}>
-              <DatePicker
-                id="outlined-birth-date"
-                label="Birth Date"
-                inputFormat="dd/MM/yyyy"
-                views={['day', 'month', 'year']}
-                mask="__/__/____"
-                value={birthDate}
-                onChange={handleChangeBirthDate}
-                renderInput={params => <TextField {...params} />}
-              />
-            </Stack>
-          </LocalizationProvider>
-          <TextField
-            id="outlined-select-sex"
-            fullWidth
-            select
-            label="Sex"
-            value={sex}
-            onChange={handleChangeSex}
-            helperText="Please select your sex"
+          <Container
+            align="center"
+            maxWidth="xs"
+            sx={{ display: 'flex', paddingLeft: '0px' }}
           >
-            {sexList.map(option => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            required
-            id="outlined-basic-company"
-            label="Company"
-            variant="outlined"
-            fullWidth
-            value={company}
-            onChange={handleChangeCompany}
-          />
-          <Container className="user-buttons">
-            <Button
-              type="button"
-              variant="contained"
-              onClick={onClickCancelButton}
+            <div>
+              <TextField
+                required
+                id="outlined-basic-name"
+                label="Name"
+                type="text"
+                variant="outlined"
+                value={name}
+                onChange={handleChangeName}
+              />
+            </div>
+            <div className="photo-perfil">
+              <input
+                accept="image/*"
+                id="icon-button-photo-perfil"
+                type="file"
+                style={{ display: 'none' }}
+                onChange={handleUploadClick}
+              />
+              <label htmlFor="icon-button-photo-perfil">
+                <IconButton
+                  color="primary"
+                  aria-label="upload photo perfil"
+                  component="span"
+                >
+                  {photouser ? (
+                    <Avatar
+                      alt="Foto do perfil do usuário"
+                      src={photouser}
+                      sx={{ width: 56, height: 56 }}
+                    />
+                  ) : (
+                    <AccountCircleOutlinedIcon sx={{ fontSize: 50 }} />
+                  )}
+                </IconButton>
+              </label>
+            </div>
+          </Container>
+          <Container component="main" maxWidth="xs">
+            <TextField
+              required
+              id="outlined-basic-username"
+              label="Username"
+              type="text"
+              fullWidth
+              variant="outlined"
+              value={username}
+              onChange={handleChangeUsername}
+            />
+            <TextField
+              required
+              id="outlined-password-input"
+              label="Password"
+              type="password"
+              autoComplete="current-password"
+              fullWidth
+              value={password}
+              onChange={handleChangePassword}
+            />
+            <TextField
+              required
+              id="outlined-basic-email"
+              label="e-mail"
+              variant="outlined"
+              fullWidth
+              value={email}
+              onChange={handleChangeEmail}
+            />
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <Stack spacing={3}>
+                <DatePicker
+                  id="outlined-birth-date"
+                  label="Birth Date"
+                  inputFormat="dd/MM/yyyy"
+                  views={['day', 'month', 'year']}
+                  mask="__/__/____"
+                  value={birthDate}
+                  onChange={handleChangeBirthDate}
+                  renderInput={params => <TextField {...params} />}
+                />
+              </Stack>
+            </LocalizationProvider>
+            <TextField
+              id="outlined-select-sex"
+              fullWidth
+              select
+              label="Sex"
+              value={sex}
+              onChange={handleChangeSex}
+              helperText="Please select your sex"
             >
-              Cancel
-            </Button>
-            <Button type="submit" variant="contained">
-              Save
-            </Button>
+              {sexList.map(option => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              required
+              id="outlined-basic-company"
+              label="Company"
+              variant="outlined"
+              fullWidth
+              value={company}
+              onChange={handleChangeCompany}
+            />
+            <Container
+              className="user-buttons"
+              maxWidth="xs"
+              sx={{ display: 'flex', justifyContent: 'center' }}
+            >
+              <Button
+                type="button"
+                variant="contained"
+                onClick={onClickCancelButton}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" variant="contained">
+                Save
+              </Button>
+            </Container>
           </Container>
         </Box>
       </Container>

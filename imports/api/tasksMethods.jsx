@@ -21,6 +21,33 @@ Meteor.methods({
     });
   },
 
+  'tasks.update'(taskId, text, description) {
+    console.log(`inside method: tasks.update ${this.userId}`);
+    console.log(`taskId: ${taskId} text: ${text} description: ${description}`);
+
+    check(taskId, String);
+    check(text, String);
+    check(description, String);
+
+    if (!this.userId) {
+      throw new Meteor.Error('Not authorized.');
+    }
+
+    // Check if the user that is authenticated is the same user that created the tasks.
+    const task = TasksCollection.findOne({ _id: taskId, userId: this.userId });
+
+    if (!task) {
+      throw new Meteor.Error('Access denied.');
+    }
+
+    TasksCollection.update(
+      { _id: taskId },
+      {
+        $set: { text: text, description: description },
+      }
+    );
+  },
+
   'tasks.remove'(taskId) {
     console.log('inside method: tasks.remove');
     check(taskId, String);
@@ -59,23 +86,5 @@ Meteor.methods({
         isChecked,
       },
     });
-  },
-
-  'tasks.findTaskUser'(taskId) {
-    console.log('inside method: tasks.findTaskUser');
-    check(taskId, String);
-
-    if (!this.userId) {
-      throw new Meteor.Error('Not authorized.');
-    }
-
-    // Check if the user that is authenticated is the same user that created the tasks.
-    const task = TasksCollection.findOne({ _id: taskId, userId: this.userId });
-    if (!task) {
-      throw new Meteor.Error('Access denied.');
-    }
-    console.log('inside method: task');
-    console.log(task);
-    return task;
   },
 });
