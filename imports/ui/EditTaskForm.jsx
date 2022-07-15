@@ -5,14 +5,19 @@ import { useTracker } from 'meteor/react-meteor-data';
 
 import { TasksCollection } from '/imports/db/TasksCollection';
 
-import Header from './Header';
-
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
+import Checkbox from '@mui/material/Checkbox';
 
+import Header from './Header';
 import Loading from '/imports/ui/Loading';
 import { getDateTimeFrom } from '/imports/helpers/dateHelpers';
 
@@ -27,10 +32,13 @@ export default function EditTaskForm() {
     taskId = params.taskId;
   }
 
+  const [title, setTitle] = useState('Incluir Tarefa');
+
   const [nameTask, setNameTask] = useState('');
   const [descriptionTask, setDescriptionTask] = useState('');
   const [creadtedDateTask, setCreatedDateTask] = useState('');
-  const [title, setTitle] = useState('Incluir Tarefa');
+  const [statusTask, setStatusTask] = useState('Registered');
+  const [privateTask, setPrivateTask] = useState(false);
 
   const { task, isLoadingTask } = useTracker(() => {
     console.log('EditTaskForm - { task, isLoadingTask } = useTracker');
@@ -73,6 +81,8 @@ export default function EditTaskForm() {
       setNameTask(task.text);
       setDescriptionTask(task.description);
       setCreatedDateTask(getDateTimeFrom(task.createdAt));
+      setStatusTask(task.statusTask);
+      setPrivateTask(task.privateTask);
     }
   }, [task]);
 
@@ -95,6 +105,15 @@ export default function EditTaskForm() {
     setDescriptionTask(event.target.value);
   };
 
+  const handleChangeStatusTask = event => {
+    console.log(`handleChangeStatusTask ${event.target.value}`);
+    setStatusTask(event.target.value);
+  };
+
+  const handleChangePrivateTask = event => {
+    setPrivateTask(event.target.checked);
+  };
+
   const onClickCancelButton = event => {
     console.log('EditTaskForm onClickCancelButton');
     navigate('/tasks');
@@ -106,27 +125,47 @@ export default function EditTaskForm() {
 
     if (!nameTask) return;
 
+    const statusAux = statusTask ? statusTask : 'Registered';
+    const isPrivateAux = privateTask ? privateTask : false;
+
+    console.log(
+      `text: ${nameTask} description: ${descriptionTask} status: ${statusAux} isPrivate: ${privateTask}`
+    );
+
     // Production environment
     if (!task) {
-      Meteor.call('tasks.insert', nameTask, descriptionTask);
+      Meteor.call(
+        'tasks.insert',
+        nameTask,
+        descriptionTask,
+        statusAux,
+        isPrivateAux
+      );
     } else {
-      Meteor.call('tasks.update', taskId, nameTask, descriptionTask);
+      Meteor.call(
+        'tasks.update',
+        taskId,
+        nameTask,
+        descriptionTask,
+        statusAux,
+        isPrivateAux
+      );
     }
+
     navigate('/tasks');
   };
 
   return (
     <>
-      <Container component="main" maxWidth="xs">
+      <Container component="main" maxWidth="md">
         <Typography
           component="h1"
           variant="h5"
           align="center"
-          sx={{ width: '400px' }}
+          paddingBottom="8px"
         >
           {title}
         </Typography>
-
         <Box
           component="form"
           sx={{
@@ -136,37 +175,103 @@ export default function EditTaskForm() {
           autoComplete="off"
         >
           {isLoadingTask && <Loading />}
-          <TextField
-            required
-            id="outlined-basic-text-task"
-            label="Task"
-            type="text"
-            variant="outlined"
-            value={nameTask}
-            onChange={handleChangeNameTask}
-            fullWidth
-          />
-          <TextField
-            required
-            id="outlined-basic-description-task"
-            label="Description"
-            type="text"
-            variant="outlined"
-            value={descriptionTask}
-            onChange={handleChangeDescriptionTask}
-            fullWidth
-          />
-          <TextField
-            id="outlined-createdAt-disable-input"
-            label="Date"
-            defaultValue={creadtedDateTask}
-            disabled
-            fullWidth
-          />
+          <Container
+            align="center"
+            maxWidth="xs"
+            sx={{ display: 'flex', paddingLeft: '0px' }}
+          >
+            <div>
+              <TextField
+                required
+                id="outlined-basic-text-task"
+                label="Task"
+                type="text"
+                variant="outlined"
+                value={nameTask}
+                onChange={handleChangeNameTask}
+                fullWidth
+              />
+            </div>
+            <div className="private-task">
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={privateTask}
+                    onChange={handleChangePrivateTask}
+                    inputProps={{ 'aria-label': 'controlled' }}
+                  />
+                }
+                label="Private"
+              />
+            </div>
+          </Container>
+          <Container component="main" maxWidth="xs">
+            <TextField
+              required
+              id="outlined-basic-description-task"
+              label="Description"
+              type="text"
+              variant="outlined"
+              value={descriptionTask}
+              onChange={handleChangeDescriptionTask}
+              fullWidth
+            />
+            <TextField
+              id="outlined-createdAt-disable-input"
+              label="Date"
+              defaultValue={creadtedDateTask}
+              disabled
+              fullWidth
+            />
+            {taskId ? (
+              <Container>
+                <FormControl
+                  sx={{
+                    width: '400px',
+                  }}
+                >
+                  <FormLabel id="row-radio-buttons-group-status">
+                    Status
+                  </FormLabel>
+                  <RadioGroup
+                    row
+                    aria-labelledby="row-radio-buttons-group-status"
+                    name="row-radio-buttons-group"
+                    value={statusTask}
+                    onChange={handleChangeStatusTask}
+                  >
+                    <FormControlLabel
+                      value="Registered"
+                      control={<Radio />}
+                      label="Registered"
+                    />
+                    <FormControlLabel
+                      value="In Progress"
+                      control={<Radio />}
+                      label="In Progress"
+                    />
+                    <FormControlLabel
+                      value="Completed"
+                      control={<Radio />}
+                      label="Completed"
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </Container>
+            ) : (
+              ''
+            )}
+          </Container>
           <Container
             className="user-buttons"
             maxWidth="xs"
-            sx={{ display: 'flex', justifyContent: 'center', width: '400px' }}
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItens: 'center',
+              paddingTop: '8px',
+              width: '400px',
+            }}
           >
             <Button
               type="button"

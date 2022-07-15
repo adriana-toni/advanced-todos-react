@@ -62,7 +62,6 @@ export default function LoginForm() {
 
     if (username) {
       console.log(`username ${username} password ${password}`);
-      // O problema está aqui
       Meteor.loginWithPassword(username, password, function (error) {
         console.log(error);
         if (error) {
@@ -71,7 +70,7 @@ export default function LoginForm() {
           );
         } else {
           console.log(`Login do usuário ${username} realizado com sucesso!`);
-          navigate('/tasks');
+          navigate('/welcome');
         }
       });
     }
@@ -139,7 +138,7 @@ export default function LoginForm() {
                   </Link>
                 </Grid>
                 <Grid item>
-                  <NavLink to="user">
+                  <NavLink to="/user" state={{ pathOrigin: '/', user: {} }}>
                     {"Don't have an account? Sign Up"}
                   </NavLink>
                 </Grid>

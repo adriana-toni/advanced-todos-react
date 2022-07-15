@@ -61,7 +61,9 @@ export default function TasksForm() {
 
     // Filtro de pesquisa de tarefa
     const userFilter =
-      user && publishType != 'allTasks' ? { userId: user._id } : {};
+      user && publishType != 'allTasks'
+        ? { userId: user._id }
+        : { $or: [{ userId: user._id }, { isPrivate: { $eq: false } }] };
 
     const handler = Meteor.subscribe(publishType);
     /*
@@ -80,13 +82,13 @@ export default function TasksForm() {
     }).fetch();
 
     const pendingTasksCount = TasksCollection.find(userFilter).count();
-    /*
+
     console.log(`userFilter`);
     console.log(userFilter);
     console.log(`pendingTasksCount ${pendingTasksCount}`);
     console.log(`tasks`);
     console.log(tasks);
-    */
+
     return { tasks, pendingTasksCount };
   });
 

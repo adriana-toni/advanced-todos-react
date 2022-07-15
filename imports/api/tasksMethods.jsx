@@ -3,11 +3,16 @@ import { check } from 'meteor/check';
 import { TasksCollection } from '/imports/db/TasksCollection';
 
 Meteor.methods({
-  'tasks.insert'(text, description) {
+  'tasks.insert'(text, description, status, isPrivate) {
     console.log(`inside method: tasks.insert ${this.userId}`);
+    console.log(
+      `text: ${text} description: ${description} status: ${status} isPrivate: ${isPrivate}`
+    );
 
     check(text, String);
     check(description, String);
+    check(status, String);
+    check(isPrivate, Boolean);
 
     if (!this.userId) {
       throw new Meteor.Error('Not authorized.');
@@ -16,18 +21,24 @@ Meteor.methods({
     TasksCollection.insert({
       text: text,
       description: description,
+      status: status,
+      isPrivate: isPrivate,
       createdAt: new Date(),
       userId: this.userId,
     });
   },
 
-  'tasks.update'(taskId, text, description) {
+  'tasks.update'(taskId, text, description, status, isPrivate) {
     console.log(`inside method: tasks.update ${this.userId}`);
-    console.log(`taskId: ${taskId} text: ${text} description: ${description}`);
+    console.log(
+      `taskId: ${taskId} text: ${text} description: ${description} status: ${status} isPrivate: ${isPrivate}`
+    );
 
     check(taskId, String);
     check(text, String);
     check(description, String);
+    check(status, String);
+    check(isPrivate, Boolean);
 
     if (!this.userId) {
       throw new Meteor.Error('Not authorized.');
@@ -40,10 +51,21 @@ Meteor.methods({
       throw new Meteor.Error('Access denied.');
     }
 
+    if (task) {
+      if (status == 'Completed' && task.status != 'In Progress') {
+        status = task.status;
+      }
+    }
+
     TasksCollection.update(
       { _id: taskId },
       {
-        $set: { text: text, description: description },
+        $set: {
+          text: text,
+          description: description,
+          status: status,
+          isPrivate: isPrivate,
+        },
       }
     );
   },

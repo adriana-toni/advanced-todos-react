@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
 import { Meteor } from 'meteor/meteor';
 
@@ -42,6 +42,11 @@ export default function UserForm() {
   const [photouser, setPhotoUser] = useState('');
 
   let navigate = useNavigate();
+
+  // Passing props from the caller
+  let { state, user } = useLocation();
+  // console.log(`Path Origin: ${state.pathOrigin}`);
+  // console.log(user);
 
   const handleChangeName = event => {
     setName(event.target.value);
@@ -153,7 +158,8 @@ export default function UserForm() {
 
   const onClickCancelButton = event => {
     /* console.log('UserForm onClickCancelButton'); */
-    navigate('/');
+    const path = state.pathOrigin ? state.pathOrigin : '/';
+    navigate(path);
   };
 
   return (
@@ -163,7 +169,6 @@ export default function UserForm() {
         <Typography component="h1" variant="h5" align="center">
           User Registration
         </Typography>
-
         <Box
           component="form"
           sx={{

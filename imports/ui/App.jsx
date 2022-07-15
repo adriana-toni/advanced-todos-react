@@ -3,7 +3,7 @@ import React from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
 
 // Configuração de Links para as rotas
-import { Outlet } from 'react-router-dom';
+// import { Outlet } from 'react-router-dom';
 
 // Telas da aplicação
 import LoginForm from '/imports/ui/LoginForm';
@@ -21,7 +21,6 @@ export default function App() {
     <>
       <Header>📝️ Meteor Advanced To-Do List with React!</Header>
       <LoginForm />
-      <Outlet />
     </>
   );
 }

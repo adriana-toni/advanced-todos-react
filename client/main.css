@@ -19,3 +19,8 @@ body {
 .user-buttons > Button:nth-child(2) {
   margin-left: 10px;
 }
+
+.private-task {
+  display: flex;
+  justify-content: center;
+}
