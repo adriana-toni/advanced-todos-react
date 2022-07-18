@@ -27,18 +27,19 @@ import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined
 
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import { CardActionArea } from '@mui/material';
+import Grid from '@mui/material/Grid';
 
 // Utilities
 import Header from './Header';
-import { maxHeight } from '@mui/system';
 
 const drawerWidth = 200;
 
-function UserData({ sx, user }) {
+function UserData({ sx, username }) {
   /* console.log('Welcome'); */
   return (
     <Typography variant="h5" color="textSecondary" align="center" {...sx}>
-      <Container fullWidth>Hi {user.username}!</Container>
+      <Container fullWidth>Hi {username}!</Container>
     </Typography>
   );
 }
@@ -56,6 +57,10 @@ export default function WelcomeForm() {
 
   const onClickPerfil = () => {
     navigate('/user', { state: { pathOrigin: '/welcome', user: user } });
+  };
+
+  const onClickViewTasks = () => {
+    navigate('/tasks', { state: { pathOrigin: '/welcome' } });
   };
 
   const {
@@ -129,7 +134,7 @@ export default function WelcomeForm() {
         anchor="left"
       >
         <Toolbar>
-          <UserData sx={{ mt: 8, mb: 4 }} user={user} />
+          <UserData sx={{ mt: 8, mb: 4 }} username={user.username} />
         </Toolbar>
         <List>
           <ListItem key="Home" disablePadding>
@@ -156,68 +161,85 @@ export default function WelcomeForm() {
               <ListItemText primary="Perfil" sx={{ paddingLeft: 2 }} />
             </ListItemButton>
           </ListItem>
-          ))
         </List>
       </Drawer>
       <Box
         component="main"
-        sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}
+        sx={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          flexGrow: 1,
+          alignContent: 'center',
+          bgcolor: 'background.default',
+          textAlign: 'center',
+          p: 3,
+        }}
       >
         <Toolbar sx={{ paddingTop: 20 }} />
-        <Container sx={{ maxWidth: 60 }}>
-          <Card variant="elevation" elevation="10" sx={{ maxWidth: 250 }}>
-            <CardContent>
-              <Typography gutterBottom variant="h5" component="div">
-                Tasks Registered
-              </Typography>
-              <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                {registeredTasksCount}
-              </Typography>
-            </CardContent>
-          </Card>
-          <Card
-            variant="elevation"
-            elevation="10"
-            sx={{ maxWidth: 250, maxHeight: 115, maxHeight: 115 }}
-          >
-            <CardContent>
-              <Typography gutterBottom variant="h5" component="div">
-                Tasks In Progress
-              </Typography>
-              <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                {inProgressTasksCount}
-              </Typography>
-            </CardContent>
-          </Card>
-          <Card
-            variant="elevation"
-            elevation="10"
-            sx={{ maxWidth: 250, maxHeight: 115 }}
-          >
-            <CardContent>
-              <Typography gutterBottom variant="h5" component="div">
-                Tasks Completed
-              </Typography>
-              <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                {completedTasksCount}
-              </Typography>
-            </CardContent>
-          </Card>
-          <Card
-            variant="elevation"
-            elevation="10"
-            sx={{ maxWidth: 250, maxHeight: 115 }}
-          >
-            <CardContent>
-              <Typography gutterBottom variant="h5" component="div">
-                Views Tasks
-              </Typography>
-              <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                &nbsp;
-              </Typography>
-            </CardContent>
-          </Card>
-        </Container>
+        <Grid container direction="row" rowSpacing={4} maxWidth={550}>
+          <Grid item xs={12} sm={6}>
+            <Card variant="elevation" elevation="10" sx={{ maxWidth: 250 }}>
+              <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                  Tasks Registered
+                </Typography>
+                <Typography sx={{ mb: 1.5 }} color="text.secondary">
+                  {registeredTasksCount}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Card
+              variant="elevation"
+              elevation="10"
+              sx={{ maxWidth: 250, maxHeight: 115 }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                  Tasks In Progress
+                </Typography>
+                <Typography sx={{ mb: 1.5 }} color="text.secondary">
+                  {inProgressTasksCount}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Card
+              variant="elevation"
+              elevation="10"
+              sx={{ maxWidth: 250, maxHeight: 115 }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                  Tasks Completed
+                </Typography>
+                <Typography sx={{ mb: 1.5 }} color="text.secondary">
+                  {completedTasksCount}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Card
+              variant="elevation"
+              elevation="10"
+              sx={{ maxWidth: 250, maxHeight: 115 }}
+            >
+              <CardContent>
+                <CardActionArea onClick={onClickViewTasks}>
+                  <Typography gutterBottom variant="h5" component="div">
+                    Views Tasks
+                  </Typography>
+                  <Typography sx={{ mb: 1.5 }} color="text.secondary">
+                    &nbsp;
+                  </Typography>
+                </CardActionArea>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
       </Box>
     </Box>
   );

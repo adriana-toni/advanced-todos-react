@@ -138,7 +138,7 @@ export default function LoginForm() {
                   </Link>
                 </Grid>
                 <Grid item>
-                  <NavLink to="/user" state={{ pathOrigin: '/', user: {} }}>
+                  <NavLink to="/user" state={{ pathOrigin: '/', user: null }}>
                     {"Don't have an account? Sign Up"}
                   </NavLink>
                 </Grid>

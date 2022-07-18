@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
 import { Meteor } from 'meteor/meteor';
@@ -31,22 +31,29 @@ const sexList = [
 ];
 
 export default function UserForm() {
-  // User's full name
-  const [name, setName] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [email, setEmail] = useState('');
-  const [sex, setSex] = useState('');
-  const [company, setCompany] = useState('');
-  const [birthDate, setBirthDate] = useState('');
-  const [photouser, setPhotoUser] = useState('');
-
-  let navigate = useNavigate();
+  console.log('Renderizando UserForm');
 
   // Passing props from the caller
-  let { state, user } = useLocation();
-  // console.log(`Path Origin: ${state.pathOrigin}`);
-  // console.log(user);
+  let {
+    state: { pathOrigin, user },
+  } = useLocation();
+  console.log(`Path Origin: ${pathOrigin}`);
+  console.log(user);
+
+  const display = user ? 'none' : '';
+  const birth = user ? user.profile.birthDate : '';
+  const initialSex = user ? user.profile.sex : '';
+
+  const [name, setName] = useState(user?.profile.name);
+  const [username, setUsername] = useState(user?.username);
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(user?.emails[0].address);
+  const [sex, setSex] = useState(initialSex);
+  const [company, setCompany] = useState(user?.profile.company);
+  const [birthDate, setBirthDate] = useState(birth);
+  const [photouser, setPhotoUser] = useState(user?.profile.photouser);
+
+  let navigate = useNavigate();
 
   const handleChangeName = event => {
     setName(event.target.value);
@@ -115,12 +122,7 @@ export default function UserForm() {
     /* Inicializando o usuário com os dados informados */
     var newUser = {
       username: username,
-      emails: [
-        {
-          address: email,
-          verified: false,
-        },
-      ],
+      email: email,
       password: password,
       profile: {
         name: name,
@@ -131,35 +133,59 @@ export default function UserForm() {
       },
     };
 
-    Meteor.call('accounts.createUser', newUser, function (error) {
-      /* console.log(error); */
-      if (error) {
-        console.log(`Erro ao tentar criar um novo usuário: ${error.reason}`);
-      } else {
-        console.log(`Usuário ${username} criado com sucesso!`);
-        Meteor.loginWithPassword(
-          newUser.username,
-          newUser.password,
-          function (error) {
-            if (error) {
-              console.log(error);
-              console.log(`Erro ao realizar o login do novo usuário: ${error}`);
-            } else {
-              console.log(
-                `Login do usuário ${username} realizado com sucesso!`
-              );
-              navigate('/tasks');
+    if (!user) {
+      console.log('Insert User');
+      // If user -> insert Mode
+      Meteor.call('accounts.createUser', newUser, function (error) {
+        /* console.log(error); */
+        if (error) {
+          console.log(`Erro ao tentar criar um novo usuário: ${error.reason}`);
+        } else {
+          console.log(`Usuário ${username} criado com sucesso!`);
+          Meteor.loginWithPassword(
+            newUser.username,
+            newUser.password,
+            function (error) {
+              if (error) {
+                console.log(error);
+                console.log(
+                  `Erro ao realizar o login do novo usuário: ${error}`
+                );
+              } else {
+                console.log(
+                  `Login do usuário ${username} realizado com sucesso!`
+                );
+                navigate('/tasks');
+              }
             }
+          );
+        }
+      });
+    } else {
+      console.log('Update User');
+      // Update Mode
+      Meteor.call(
+        'accounts.updateUser',
+        user._id,
+        newUser.profile,
+        function (error) {
+          /* console.log(error); */
+          if (error) {
+            console.log(
+              `Erro ao tentar atualizar os dados do usuário: ${error.reason}`
+            );
+          } else {
+            console.log(`Usuário ${username} atualizado com sucesso!`);
           }
-        );
-      }
-    });
+        }
+      );
+      navigate(pathOrigin);
+    }
   };
 
   const onClickCancelButton = event => {
     /* console.log('UserForm onClickCancelButton'); */
-    const path = state.pathOrigin ? state.pathOrigin : '/';
-    navigate(path);
+    navigate(pathOrigin);
   };
 
   return (
@@ -222,35 +248,37 @@ export default function UserForm() {
             </div>
           </Container>
           <Container component="main" maxWidth="xs">
-            <TextField
-              required
-              id="outlined-basic-username"
-              label="Username"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={username}
-              onChange={handleChangeUsername}
-            />
-            <TextField
-              required
-              id="outlined-password-input"
-              label="Password"
-              type="password"
-              autoComplete="current-password"
-              fullWidth
-              value={password}
-              onChange={handleChangePassword}
-            />
-            <TextField
-              required
-              id="outlined-basic-email"
-              label="e-mail"
-              variant="outlined"
-              fullWidth
-              value={email}
-              onChange={handleChangeEmail}
-            />
+            <Box component="div" sx={{ display: { display } }}>
+              <TextField
+                required
+                id="outlined-basic-username"
+                label="Username"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={username}
+                onChange={handleChangeUsername}
+              />
+              <TextField
+                required
+                id="outlined-password-input"
+                label="Password"
+                type="password"
+                autoComplete="current-password"
+                fullWidth
+                value={password}
+                onChange={handleChangePassword}
+              />
+              <TextField
+                required
+                id="outlined-basic-email"
+                label="e-mail"
+                variant="outlined"
+                fullWidth
+                value={email}
+                onChange={handleChangeEmail}
+              />
+            </Box>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <Stack spacing={3}>
                 <DatePicker

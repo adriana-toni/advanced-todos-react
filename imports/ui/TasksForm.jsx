@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 
 // Configuração de Links para as rotas
@@ -15,11 +15,15 @@ import Loading from '/imports/ui/Loading';
 
 import Header from './Header';
 
+import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import AddTaskOutlinedIcon from '@mui/icons-material/AddTaskOutlined';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 
 function Welcome({ sx, children: username }) {
   /* console.log('Welcome'); */
@@ -34,12 +38,8 @@ export default function TasksForm() {
   console.log('Renderizando TaskForm');
   const user = useTracker(() => Meteor.user());
 
-  /*
-  if (user) {
-    console.log('TaskForm: User ');
-    console.log(user);
-  }
-  */
+  const [showCompleted, setShowCompleted] = useState(true);
+  const showCompletedFilter = new ReactiveVar({});
 
   let navigate = useNavigate();
 
@@ -65,6 +65,10 @@ export default function TasksForm() {
         ? { userId: user._id }
         : { $or: [{ userId: user._id }, { isPrivate: { $eq: false } }] };
 
+    console.log('pendingOnlyFilter antes - showCompletedFilter');
+    console.log(showCompletedFilter);
+    const pendingOnlyFilter = { ...showCompletedFilter.get(), ...userFilter };
+
     const handler = Meteor.subscribe(publishType);
     /*
     console.log('Subscribe');
@@ -77,14 +81,18 @@ export default function TasksForm() {
     }
 
     // Return data according of publishType
-    const tasks = TasksCollection.find(userFilter, {
+    const tasks = TasksCollection.find(pendingOnlyFilter, {
       sort: { createdAt: -1 },
     }).fetch();
 
-    const pendingTasksCount = TasksCollection.find(userFilter).count();
+    const pendingTasksCount = TasksCollection.find(pendingOnlyFilter).count();
 
-    console.log(`userFilter`);
+    console.log('userFilter');
     console.log(userFilter);
+    console.log('showCompletedFilter');
+    console.log(showCompletedFilter.get());
+    console.log(`pendingOnlyFilter`);
+    console.log(pendingOnlyFilter);
     console.log(`pendingTasksCount ${pendingTasksCount}`);
     console.log(`tasks`);
     console.log(tasks);
@@ -99,8 +107,9 @@ export default function TasksForm() {
 
   const onClickButtonEdit = task => {
     console.log('TaskForm onClickButtonEdit');
-    //console.log(task);
-    navigate(`/edit/${task._id}`);
+    navigate(`/edit/${task._id}`, {
+      state: { pathOrigin: '/welcome', task: task },
+    });
   };
 
   const onClickButtonDelete = task => {
@@ -108,6 +117,16 @@ export default function TasksForm() {
     console.log(task);
 
     Meteor.call('tasks.remove', task._id);
+  };
+
+  const onClickShowCompleted = () => {
+    console.log('onClickShowCompleted');
+    setShowCompleted(!showCompleted);
+    if (showCompleted) {
+      showCompletedFilter.set({});
+    } else {
+      showCompletedFilter.set({ status: { $ne: 'Completed' } });
+    }
   };
 
   return (
@@ -128,6 +147,19 @@ export default function TasksForm() {
                   <AddTaskOutlinedIcon />
                 </IconButton>
               </Typography>
+              <FormGroup>
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={showCompleted}
+                        onClick={onClickShowCompleted}
+                      />
+                    }
+                    label="Show Completed"
+                  />
+                </Box>
+              </FormGroup>
               <List
                 sx={{
                   width: '100%',

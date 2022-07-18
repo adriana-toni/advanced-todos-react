@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 
 import { useTracker } from 'meteor/react-meteor-data';
 
@@ -23,68 +23,35 @@ import { getDateTimeFrom } from '/imports/helpers/dateHelpers';
 
 export default function EditTaskForm() {
   console.log('Renderizando EditTaskForm');
+
   const user = useTracker(() => Meteor.user());
 
   let taskId;
+  // Passing URL params
   let params = useParams();
   if (params) {
     console.log('Edit Task Params');
     taskId = params.taskId;
   }
 
-  const [title, setTitle] = useState('Incluir Tarefa');
+  // Passing props from the caller
+  let {
+    state: { pathOrigin, task },
+  } = useLocation();
+  console.log(`Path Origin: ${pathOrigin}`);
+  console.log(task);
 
-  const [nameTask, setNameTask] = useState('');
-  const [descriptionTask, setDescriptionTask] = useState('');
-  const [creadtedDateTask, setCreatedDateTask] = useState('');
-  const [statusTask, setStatusTask] = useState('Registered');
-  const [privateTask, setPrivateTask] = useState(false);
+  const title = task ? `Editar Tarefa: ${task.text}` : 'Incluir Tarefa';
+  const status = task ? task.status : 'Registered';
+  const private = task ? task.isPrivate : false;
 
-  const { task, isLoadingTask } = useTracker(() => {
-    console.log('EditTaskForm - { task, isLoadingTask } = useTracker');
+  // const [title, setTitle] = useState('Incluir Tarefa');
 
-    const noDataAvailable = { task: {} };
-
-    if (!user && !taskId) {
-      return noDataAvailable;
-    }
-
-    // Allows the client code to ask for data to the client.
-    const handler = Meteor.subscribe('tasks');
-
-    if (!handler.ready()) {
-      console.log('handler is not ready!');
-      return { ...noDataAvailable, isLoadingTask: true };
-    }
-
-    const taskFilter = { _id: taskId };
-
-    // Production environment - Chamada síncrona
-    const task = TasksCollection.findOne(taskFilter, {
-      sort: { createdAt: -1 },
-    });
-    // console.log('Tarefa recuperada');
-    // console.log(task);
-
-    return { task };
-  });
-
-  useEffect(() => {
-    console.log(`inside EditTaskForm - useEffect`);
-
-    const selectedTitle = !task
-      ? 'Incluir Tarefa'
-      : `Editar Tarefa: ${task.text}`;
-    setTitle(selectedTitle);
-
-    if (task) {
-      setNameTask(task.text);
-      setDescriptionTask(task.description);
-      setCreatedDateTask(getDateTimeFrom(task.createdAt));
-      setStatusTask(task.statusTask);
-      setPrivateTask(task.privateTask);
-    }
-  }, [task]);
+  const [nameTask, setNameTask] = useState(task?.text);
+  const [descriptionTask, setDescriptionTask] = useState(task?.description);
+  const [creadtedDateTask, setCreatedDateTask] = useState(task?.createdAt);
+  const [statusTask, setStatusTask] = useState(status);
+  const [privateTask, setPrivateTask] = useState(private);
 
   /*
   console.log(`title: ${title}`);
@@ -157,7 +124,8 @@ export default function EditTaskForm() {
 
   return (
     <>
-      <Container component="main" maxWidth="md">
+      <Header>📝️ Meteor Advanced To-Do List with React!</Header>
+      <Container component="editTask-main" maxWidth="md">
         <Typography
           component="h1"
           variant="h5"
@@ -174,7 +142,6 @@ export default function EditTaskForm() {
           noValidate
           autoComplete="off"
         >
-          {isLoadingTask && <Loading />}
           <Container
             align="center"
             maxWidth="xs"
