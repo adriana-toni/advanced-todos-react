@@ -75,10 +75,10 @@ export default function WelcomeForm() {
       completedTasksCount: 0,
     };
 
-    const publishType = 'allTasks';
+    const publishType = 'allTasksWithClientFilter';
 
     const userFilter =
-      user && publishType != 'allTasks'
+      user && publishType != 'allTasksWithClientFilter'
         ? { userId: user._id }
         : { $or: [{ userId: user._id }, { isPrivate: { $eq: false } }] };
 
@@ -229,7 +229,17 @@ export default function WelcomeForm() {
             >
               <CardContent>
                 <CardActionArea onClick={onClickViewTasks}>
-                  <Typography gutterBottom variant="h5" component="div">
+                  <Typography
+                    gutterBottom
+                    variant="h5"
+                    component="div"
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
                     Views Tasks
                   </Typography>
                   <Typography sx={{ mb: 1.5 }} color="text.secondary">

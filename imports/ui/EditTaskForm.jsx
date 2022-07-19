@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 
 import { useTracker } from 'meteor/react-meteor-data';
-
-import { TasksCollection } from '/imports/db/TasksCollection';
 
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -18,7 +16,6 @@ import FormLabel from '@mui/material/FormLabel';
 import Checkbox from '@mui/material/Checkbox';
 
 import Header from './Header';
-import Loading from '/imports/ui/Loading';
 import { getDateTimeFrom } from '/imports/helpers/dateHelpers';
 
 export default function EditTaskForm() {
@@ -44,12 +41,14 @@ export default function EditTaskForm() {
   const title = task ? `Editar Tarefa: ${task.text}` : 'Incluir Tarefa';
   const status = task ? task.status : 'Registered';
   const private = task ? task.isPrivate : false;
+  const dateAt = task ? getDateTimeFrom(task.createdAt) : '';
+  const disableCompleted = task?.status == 'In Progress' ? false : true;
 
   // const [title, setTitle] = useState('Incluir Tarefa');
 
   const [nameTask, setNameTask] = useState(task?.text);
   const [descriptionTask, setDescriptionTask] = useState(task?.description);
-  const [creadtedDateTask, setCreatedDateTask] = useState(task?.createdAt);
+  const [creadtedDateTask, setCreatedDateTask] = useState(dateAt);
   const [statusTask, setStatusTask] = useState(status);
   const [privateTask, setPrivateTask] = useState(private);
 
@@ -83,7 +82,7 @@ export default function EditTaskForm() {
 
   const onClickCancelButton = event => {
     console.log('EditTaskForm onClickCancelButton');
-    navigate('/tasks');
+    navigate(pathOrigin);
   };
 
   const onClickSaveButton = event => {
@@ -106,7 +105,15 @@ export default function EditTaskForm() {
         nameTask,
         descriptionTask,
         statusAux,
-        isPrivateAux
+        isPrivateAux,
+        function (error) {
+          if (error) {
+            console.log(error);
+            console.log(`Erro na inserção da tarefa: ${error}`);
+          } else {
+            console.log(`Tarefa  ${nameTask} incluída com sucesso!`);
+          }
+        }
       );
     } else {
       Meteor.call(
@@ -115,11 +122,19 @@ export default function EditTaskForm() {
         nameTask,
         descriptionTask,
         statusAux,
-        isPrivateAux
+        isPrivateAux,
+        function (error) {
+          if (error) {
+            console.log(error);
+            console.log(`Erro na atualização da tarefa: ${error}`);
+          } else {
+            console.log(`Tarefa  ${nameTask} atualizada com sucesso!`);
+          }
+        }
       );
     }
 
-    navigate('/tasks');
+    navigate(pathOrigin);
   };
 
   return (
@@ -218,6 +233,7 @@ export default function EditTaskForm() {
                       label="In Progress"
                     />
                     <FormControlLabel
+                      disabled={disableCompleted}
                       value="Completed"
                       control={<Radio />}
                       label="Completed"

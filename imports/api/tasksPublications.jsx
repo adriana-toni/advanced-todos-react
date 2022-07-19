@@ -6,7 +6,14 @@ Meteor.publish('tasks', function publishTasks() {
   return TasksCollection.find({ userId: this.userId });
 });
 
-Meteor.publish('allTasks', function publishAllTasks() {
-  // Retorna todas as tasks cadastradas independente do usuário
+Meteor.publish('allTasks', function publishAllTasks(filter) {
+  // Retorna todas as tasks cadastradas independente do usuário, realizando o filtro do
+  // lado do servidor
+  return TasksCollection.find(filter);
+});
+
+Meteor.publish('allTasksWithClientFilter', function publishAllTasks() {
+  // Retorna todas as tasks cadastradas independente do usuário, realizando o filtro do
+  // lado do cliente
   return TasksCollection.find();
 });

@@ -9,7 +9,6 @@ import { useTracker } from 'meteor/react-meteor-data';
 
 import { TasksCollection } from '/imports/db/TasksCollection';
 import Task from '/imports/ui/Task';
-import EditTaskForm from '/imports/ui/EditTaskForm';
 import LoginForm from '/imports/ui/LoginForm';
 import Loading from '/imports/ui/Loading';
 
@@ -24,6 +23,9 @@ import AddTaskOutlinedIcon from '@mui/icons-material/AddTaskOutlined';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
 
 function Welcome({ sx, children: username }) {
   /* console.log('Welcome'); */
@@ -34,12 +36,27 @@ function Welcome({ sx, children: username }) {
   );
 }
 
+function getMaxPagination(totalTasks, limitPage) {
+  if (totalTasks % limitPage == 0) {
+    return Math.trunc(totalTasks / limitPage);
+  }
+  return Math.trunc(totalTasks / limitPage + 1);
+}
+
 export default function TasksForm() {
   console.log('Renderizando TaskForm');
   const user = useTracker(() => Meteor.user());
 
   const [showCompleted, setShowCompleted] = useState(true);
-  const showCompletedFilter = new ReactiveVar({});
+  const hideCompletedFilter = { status: { $ne: 'Completed' } };
+
+  const limitedTasks = 4;
+  const [page, setPage] = useState(1);
+  const handleChangePage = (event, value) => {
+    setPage(value);
+  };
+
+  const [searchTask, setSearchTask] = useState('');
 
   let navigate = useNavigate();
 
@@ -49,66 +66,111 @@ export default function TasksForm() {
     Meteor.logout();
   };
 
-  const { tasks, pendingTasksCount, isLoading } = useTracker(() => {
-    const noDataAvailable = { tasks: [], pendingTasksCount: 0 };
+  const { tasks, pendingTasksCount, maxPagination, isLoading } = useTracker(
+    () => {
+      const noDataAvailable = {
+        tasks: [],
+        pendingTasksCount: 0,
+        maxPagination: 1,
+      };
 
-    if (!user) {
-      return noDataAvailable;
+      if (!user) {
+        return noDataAvailable;
+      }
+
+      // Allows the client code to ask for data to the client.
+      const publishType = 'allTasks';
+
+      // Search task by text
+      const taskSearch = searchTask
+        ? //? { text: { $regex: `/${searchTask}/` } }
+          { text: { $regex: `^${searchTask}.*` } }
+        : {};
+
+      // Search task by userId or isPrivate according publishType
+      const userPrivateFilter =
+        user && publishType != 'allTasks'
+          ? { userId: user._id }
+          : {
+              $or: [{ userId: user._id }, { isPrivate: { $eq: false } }],
+            };
+
+      // Search task by status Registered or In Progress
+      const statusFilter = showCompleted ? {} : hideCompletedFilter;
+
+      // Ordenação
+      const optionsOfOrdenation = { sort: { createdAt: -1 } };
+
+      // Limite de Paginação
+      const pageLimiter = { limit: limitedTasks };
+
+      // Skip
+      const skipLimter = { skip: (page - 1) * limitedTasks };
+
+      const optionsFind = {
+        ...optionsOfOrdenation,
+        ...pageLimiter,
+        ...skipLimter,
+      };
+      console.log('optionsFind');
+      console.log(optionsFind);
+
+      const pendingOnlyFilter = {
+        ...taskSearch,
+        ...statusFilter,
+        ...userPrivateFilter,
+      };
+      const handler = Meteor.subscribe(publishType, pendingOnlyFilter);
+      /*
+      console.log('Subscribe');
+      console.log(handler);
+      */
+
+      if (!handler.ready()) {
+        // console.log('handler is not ready!');
+        return { ...noDataAvailable, isLoading: true };
+      }
+
+      console.log('taskSearch');
+      console.log(taskSearch);
+      console.log('userPrivateFilter');
+      console.log(userPrivateFilter);
+      console.log('statusFilter');
+      console.log(statusFilter);
+      console.log(`pendingOnlyFilter`);
+      console.log(pendingOnlyFilter);
+
+      // Return data according of publishType
+      const tasks = TasksCollection.find(
+        pendingOnlyFilter,
+        optionsFind
+      ).fetch();
+
+      const pendingTasksCount = TasksCollection.find(pendingOnlyFilter).count();
+      const maxPagination = Math.trunc(
+        getMaxPagination(pendingTasksCount, limitedTasks)
+      );
+
+      console.log(`pendingTasksCount ${pendingTasksCount}`);
+      console.log(`maxPagination ${maxPagination}`);
+      console.log(`tasks`);
+      console.log(tasks);
+
+      return { tasks, pendingTasksCount, maxPagination };
     }
+  );
 
-    // Allows the client code to ask for data to the client.
-    const publishType = 'allTasks';
-
-    // Filtro de pesquisa de tarefa
-    const userFilter =
-      user && publishType != 'allTasks'
-        ? { userId: user._id }
-        : { $or: [{ userId: user._id }, { isPrivate: { $eq: false } }] };
-
-    console.log('pendingOnlyFilter antes - showCompletedFilter');
-    console.log(showCompletedFilter);
-    const pendingOnlyFilter = { ...showCompletedFilter.get(), ...userFilter };
-
-    const handler = Meteor.subscribe(publishType);
-    /*
-    console.log('Subscribe');
-    console.log(handler);
-    */
-
-    if (!handler.ready()) {
-      // console.log('handler is not ready!');
-      return { ...noDataAvailable, isLoading: true };
-    }
-
-    // Return data according of publishType
-    const tasks = TasksCollection.find(pendingOnlyFilter, {
-      sort: { createdAt: -1 },
-    }).fetch();
-
-    const pendingTasksCount = TasksCollection.find(pendingOnlyFilter).count();
-
-    console.log('userFilter');
-    console.log(userFilter);
-    console.log('showCompletedFilter');
-    console.log(showCompletedFilter.get());
-    console.log(`pendingOnlyFilter`);
-    console.log(pendingOnlyFilter);
-    console.log(`pendingTasksCount ${pendingTasksCount}`);
-    console.log(`tasks`);
-    console.log(tasks);
-
-    return { tasks, pendingTasksCount };
-  });
-
-  const onAddButtonEdit = () => {
+  const onClickButtonInsert = () => {
     console.log('TaskForm onAddButtonEdit');
-    navigate(`/edit`);
+    navigate(`/edit`, {
+      state: { pathOrigin: '/tasks', task: null },
+    });
   };
 
   const onClickButtonEdit = task => {
     console.log('TaskForm onClickButtonEdit');
     navigate(`/edit/${task._id}`, {
-      state: { pathOrigin: '/welcome', task: task },
+      state: { pathOrigin: '/tasks', task: task },
     });
   };
 
@@ -119,14 +181,14 @@ export default function TasksForm() {
     Meteor.call('tasks.remove', task._id);
   };
 
+  const handleChangeSearchTask = event => {
+    console.log('TaskForm handleChangeSearchTask');
+    setSearchTask(event.target.value);
+  };
+
   const onClickShowCompleted = () => {
     console.log('onClickShowCompleted');
     setShowCompleted(!showCompleted);
-    if (showCompleted) {
-      showCompletedFilter.set({});
-    } else {
-      showCompletedFilter.set({ status: { $ne: 'Completed' } });
-    }
   };
 
   return (
@@ -134,19 +196,27 @@ export default function TasksForm() {
       <Header>📝️ Meteor Advanced To-Do List with React!</Header>
       <Container component="main" maxWidth="xs">
         {user ? (
-          pendingTasksCount != 0 ? (
-            <>
+          <>
+            <Container>
               {isLoading && <Loading />}
               <Typography variant="h6" color="textPrimary" align="center">
                 Tarefas Cadastradas
                 <IconButton
                   aria-label="addTask"
-                  onClick={onAddButtonEdit}
+                  onClick={onClickButtonInsert}
                   sx={{ marginLeft: '10px' }}
                 >
                   <AddTaskOutlinedIcon />
                 </IconButton>
               </Typography>
+              <TextField
+                id="standard-search"
+                label="Search task"
+                type="search"
+                variant="standard"
+                onChange={handleChangeSearchTask}
+                fullWidth
+              />
               <FormGroup>
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                   <FormControlLabel
@@ -156,31 +226,46 @@ export default function TasksForm() {
                         onClick={onClickShowCompleted}
                       />
                     }
-                    label="Show Completed"
+                    label="Show All"
                   />
                 </Box>
               </FormGroup>
-              <List
-                sx={{
-                  width: '100%',
-                  maxWidth: 400,
-                  bgcolor: 'background.paper',
-                }}
-              >
-                {tasks.map(task => (
-                  <Task
-                    key={task._id}
-                    task={task}
-                    user={user}
-                    onEditClick={onClickButtonEdit}
-                    onDeleteClick={onClickButtonDelete}
-                  />
-                ))}
-              </List>
-            </>
-          ) : (
-            <EditTaskForm />
-          )
+            </Container>
+            <List
+              sx={{
+                width: '100%',
+                maxWidth: 400,
+                bgcolor: 'background.paper',
+              }}
+            >
+              {tasks.map(task => (
+                <Task
+                  key={task._id}
+                  task={task}
+                  user={user}
+                  onEditClick={onClickButtonEdit}
+                  onDeleteClick={onClickButtonDelete}
+                />
+              ))}
+            </List>
+            <Box
+              component="footer"
+              maxWidth="xs"
+              sx={{
+                paddingTop: '10px',
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              <Stack spacing={2}>
+                <Pagination
+                  count={maxPagination}
+                  page={page}
+                  onChange={handleChangePage}
+                />
+              </Stack>
+            </Box>
+          </>
         ) : (
           <LoginForm />
         )}
