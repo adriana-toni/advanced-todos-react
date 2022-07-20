@@ -3,7 +3,6 @@ import { Meteor } from 'meteor/meteor';
 
 // Configuração de Links para as rotas
 import { useNavigate } from 'react-router-dom';
-import { Outlet } from 'react-router-dom';
 
 import { useTracker } from 'meteor/react-meteor-data';
 
@@ -12,12 +11,10 @@ import Task from '/imports/ui/Task';
 import LoginForm from '/imports/ui/LoginForm';
 import Loading from '/imports/ui/Loading';
 
-import Header from './Header';
-
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import AddTaskOutlinedIcon from '@mui/icons-material/AddTaskOutlined';
 import FormGroup from '@mui/material/FormGroup';
@@ -26,15 +23,6 @@ import Checkbox from '@mui/material/Checkbox';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-
-function Welcome({ sx, children: username }) {
-  /* console.log('Welcome'); */
-  return (
-    <Typography variant="h5" color="textSecondary" align="justify" {...sx}>
-      Hi {username}, welcome to the ToDo List!
-    </Typography>
-  );
-}
 
 function getMaxPagination(totalTasks, limitPage) {
   if (totalTasks % limitPage == 0) {
@@ -57,14 +45,10 @@ export default function TasksForm() {
   };
 
   const [searchTask, setSearchTask] = useState('');
+  const [messageError, setMessageError] = useState('');
+  const [messageSucess, setMessageSucess] = useState('');
 
   let navigate = useNavigate();
-
-  const onClickLogout = event => {
-    console.log('Logout');
-    navigate('/');
-    Meteor.logout();
-  };
 
   const { tasks, pendingTasksCount, maxPagination, isLoading } = useTracker(
     () => {
@@ -178,7 +162,18 @@ export default function TasksForm() {
     console.log('TaskForm onDeleteButtonEdit');
     console.log(task);
 
-    Meteor.call('tasks.remove', task._id);
+    setMessageError('');
+    setMessageSucess('');
+
+    Meteor.call('tasks.remove', task._id, function (error) {
+      if (error) {
+        console.log(`Erro na remoção da tarefa: ${error}`);
+        setMessageError(`Error removing task: ${error.error}`);
+      } else {
+        console.log(`Tarefa  ${task.text} removida com sucesso!`);
+        setMessageSucess(`Task ${task.text} successfully removed!`);
+      }
+    });
   };
 
   const handleChangeSearchTask = event => {
@@ -193,12 +188,44 @@ export default function TasksForm() {
 
   return (
     <>
-      <Header>📝️ Meteor Advanced To-Do List with React!</Header>
-      <Container component="main" maxWidth="xs">
+      <Box
+        component="main"
+        maxWidth="xs"
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        sx={{ mt: 15, ml: 25 }}
+      >
         {user ? (
           <>
-            <Container>
+            <Box>
               {isLoading && <Loading />}
+              {messageError ? (
+                <Alert
+                  severity="error"
+                  onClose={() => {
+                    setMessageError('');
+                  }}
+                  sx={{ mb: 4 }}
+                >
+                  {messageError}
+                </Alert>
+              ) : (
+                ''
+              )}
+              {messageSucess ? (
+                <Alert
+                  severity="success"
+                  onClose={() => {
+                    setMessageSucess('');
+                  }}
+                  sx={{ mb: 4 }}
+                >
+                  {messageSucess}
+                </Alert>
+              ) : (
+                ''
+              )}
               <Typography variant="h6" color="textPrimary" align="center">
                 Tarefas Cadastradas
                 <IconButton
@@ -209,14 +236,16 @@ export default function TasksForm() {
                   <AddTaskOutlinedIcon />
                 </IconButton>
               </Typography>
-              <TextField
-                id="standard-search"
-                label="Search task"
-                type="search"
-                variant="standard"
-                onChange={handleChangeSearchTask}
-                fullWidth
-              />
+              <Box display="flex" justifyContent="center" alignItems="center">
+                <TextField
+                  id="standard-search"
+                  label="Search task"
+                  type="search"
+                  variant="standard"
+                  onChange={handleChangeSearchTask}
+                  sx={{ width: '400px' }}
+                />
+              </Box>
               <FormGroup>
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                   <FormControlLabel
@@ -230,24 +259,31 @@ export default function TasksForm() {
                   />
                 </Box>
               </FormGroup>
-            </Container>
-            <List
-              sx={{
-                width: '100%',
-                maxWidth: 400,
-                bgcolor: 'background.paper',
-              }}
-            >
-              {tasks.map(task => (
-                <Task
-                  key={task._id}
-                  task={task}
-                  user={user}
-                  onEditClick={onClickButtonEdit}
-                  onDeleteClick={onClickButtonDelete}
-                />
-              ))}
-            </List>
+              <Box
+                display="flex"
+                flexDirection="column"
+                justifyContent="center"
+                alignItems="center"
+              >
+                <List
+                  sx={{
+                    width: '100%',
+                    maxWidth: 400,
+                    bgcolor: 'background.paper',
+                  }}
+                >
+                  {tasks.map(task => (
+                    <Task
+                      key={task._id}
+                      task={task}
+                      user={user}
+                      onEditClick={onClickButtonEdit}
+                      onDeleteClick={onClickButtonDelete}
+                    />
+                  ))}
+                </List>
+              </Box>
+            </Box>
             <Box
               component="footer"
               maxWidth="xs"
@@ -269,8 +305,7 @@ export default function TasksForm() {
         ) : (
           <LoginForm />
         )}
-      </Container>
-      <Outlet />
+      </Box>
     </>
   );
 }

@@ -12,7 +12,7 @@ import EditIcon from '@mui/icons-material/Edit';
 
 import { getTimeFrom } from '/imports/helpers/dateHelpers';
 
-export default function Task({ task, user, onEditClick, onDeleteClick }) {
+export default function Task({ task, onEditClick, onDeleteClick }) {
   console.log('Renderizando Task');
 
   const timeTask = getTimeFrom(task.createdAt);
@@ -27,7 +27,7 @@ export default function Task({ task, user, onEditClick, onDeleteClick }) {
               <AssignmentOutlinedIcon />
             </Avatar>
           </ListItemAvatar>
-          <ListItemText primary={titleTask} secondary={user.username} />
+          <ListItemText primary={titleTask} secondary={task.userCreation} />
           <IconButton aria-label="delete" onClick={() => onDeleteClick(task)}>
             <DeleteIcon />
           </IconButton>

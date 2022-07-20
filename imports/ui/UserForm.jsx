@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import { Meteor } from 'meteor/meteor';
 
-import Header from './Header';
-
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -40,8 +37,8 @@ export default function UserForm() {
   console.log(`Path Origin: ${pathOrigin}`);
   console.log(user);
 
-  const display = user ? 'none' : '';
-  const birth = user ? user.profile.birthDate : '';
+  const displayLoginInfo = user ? 'none' : 'flex';
+  const birth = user ? user.profile.birthDate : null;
   const initialSex = user ? user.profile.sex : '';
 
   const [name, setName] = useState(user?.profile.name);
@@ -52,6 +49,9 @@ export default function UserForm() {
   const [company, setCompany] = useState(user?.profile.company);
   const [birthDate, setBirthDate] = useState(birth);
   const [photouser, setPhotoUser] = useState(user?.profile.photouser);
+
+  const [messageError, setMessageError] = useState('');
+  const [messageSucess, setMessageSucess] = useState('');
 
   let navigate = useNavigate();
 
@@ -133,15 +133,20 @@ export default function UserForm() {
       },
     };
 
+    setMessageError('');
+    setMessageSucess('');
+
     if (!user) {
-      console.log('Insert User');
       // If user -> insert Mode
+      // console.log('Insert User');
       Meteor.call('accounts.createUser', newUser, function (error) {
         /* console.log(error); */
         if (error) {
           console.log(`Erro ao tentar criar um novo usuário: ${error.reason}`);
+          setMessageError(`Error trying to create a new user: ${error.reason}`);
         } else {
           console.log(`Usuário ${username} criado com sucesso!`);
+          setMessageSucess(`User ${username} created successfully!`);
           Meteor.loginWithPassword(
             newUser.username,
             newUser.password,
@@ -155,15 +160,15 @@ export default function UserForm() {
                 console.log(
                   `Login do usuário ${username} realizado com sucesso!`
                 );
-                navigate('/tasks');
+                navigate('/welcome');
               }
             }
           );
         }
       });
     } else {
-      console.log('Update User');
       // Update Mode
+      // console.log('Update User');
       Meteor.call(
         'accounts.updateUser',
         user._id,
@@ -174,8 +179,12 @@ export default function UserForm() {
             console.log(
               `Erro ao tentar atualizar os dados do usuário: ${error.reason}`
             );
+            setMessageError(
+              `Error trying to update user data: ${error.reason}`
+            );
           } else {
             console.log(`Usuário ${username} atualizado com sucesso!`);
+            setMessageSuccess(`User ${username} successfully updated!`);
           }
         }
       );
@@ -190,112 +199,146 @@ export default function UserForm() {
 
   return (
     <>
-      <Header>📝️ Meteor Advanced To-Do List with React!</Header>
-      <Container component="main" maxWidth="md">
+      <Box
+        component="main"
+        maxWidth="xs"
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        sx={{ mt: 15, ml: 25 }}
+      >
         <Typography component="h1" variant="h5" align="center">
           User Registration
         </Typography>
+        {messageError ? (
+          <Alert
+            severity="error"
+            onClose={() => {
+              setMessageError('');
+            }}
+            sx={{ mb: 4 }}
+          >
+            {messageError}
+          </Alert>
+        ) : (
+          ''
+        )}
+        {messageSucess ? (
+          <Alert
+            severity="success"
+            onClose={() => {
+              setMessageSucess('');
+            }}
+            sx={{ mb: 4 }}
+          >
+            {messageSucess}
+          </Alert>
+        ) : (
+          ''
+        )}
         <Box
           component="form"
           sx={{
             '& .MuiTextField-root': { m: 1, width: '400px' },
           }}
+          maxWidth="xs"
           noValidate
           autoComplete="off"
           onSubmit={onClickSignUp}
         >
-          <Container
-            align="center"
-            maxWidth="xs"
-            sx={{ display: 'flex', paddingLeft: '0px' }}
+          <Box
+            display="flex"
+            flexDirection="row"
+            justifyContent="center"
+            sx={{ ml: 8 }}
           >
-            <div>
-              <TextField
-                required
-                id="outlined-basic-name"
-                label="Name"
-                type="text"
-                variant="outlined"
-                value={name}
-                onChange={handleChangeName}
-              />
-            </div>
-            <div className="photo-perfil">
-              <input
-                accept="image/*"
-                id="icon-button-photo-perfil"
-                type="file"
-                style={{ display: 'none' }}
-                onChange={handleUploadClick}
-              />
-              <label htmlFor="icon-button-photo-perfil">
-                <IconButton
-                  color="primary"
-                  aria-label="upload photo perfil"
-                  component="span"
-                >
-                  {photouser ? (
-                    <Avatar
-                      alt="Foto do perfil do usuário"
-                      src={photouser}
-                      sx={{ width: 56, height: 56 }}
-                    />
-                  ) : (
-                    <AccountCircleOutlinedIcon sx={{ fontSize: 50 }} />
-                  )}
-                </IconButton>
-              </label>
-            </div>
-          </Container>
-          <Container component="main" maxWidth="xs">
-            <Box component="div" sx={{ display: { display } }}>
-              <TextField
-                required
-                id="outlined-basic-username"
-                label="Username"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={username}
-                onChange={handleChangeUsername}
-              />
-              <TextField
-                required
-                id="outlined-password-input"
-                label="Password"
-                type="password"
-                autoComplete="current-password"
-                fullWidth
-                value={password}
-                onChange={handleChangePassword}
-              />
-              <TextField
-                required
-                id="outlined-basic-email"
-                label="e-mail"
-                variant="outlined"
-                fullWidth
-                value={email}
-                onChange={handleChangeEmail}
-              />
-            </Box>
+            <TextField
+              required
+              id="outlined-basic-name"
+              label="Name"
+              type="text"
+              variant="outlined"
+              value={name}
+              onChange={handleChangeName}
+            />
+            <input
+              accept="image/*"
+              id="icon-button-photo-perfil"
+              type="file"
+              style={{ display: 'none' }}
+              onChange={handleUploadClick}
+            />
+            <label htmlFor="icon-button-photo-perfil">
+              <IconButton
+                color="primary"
+                aria-label="upload photo perfil"
+                component="span"
+              >
+                {photouser ? (
+                  <Avatar
+                    alt="Foto do perfil do usuário"
+                    src={photouser}
+                    sx={{ width: 56, height: 56 }}
+                  />
+                ) : (
+                  <AccountCircleOutlinedIcon sx={{ fontSize: 50 }} />
+                )}
+              </IconButton>
+            </label>
+          </Box>
+          <Box
+            display={displayLoginInfo}
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <TextField
+              required
+              id="outlined-basic-username"
+              label="Username"
+              type="text"
+              variant="outlined"
+              value={username}
+              onChange={handleChangeUsername}
+            />
+            <TextField
+              required
+              id="outlined-password-input"
+              label="Password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={handleChangePassword}
+            />
+            <TextField
+              required
+              id="outlined-basic-email"
+              label="e-mail"
+              variant="outlined"
+              value={email}
+              onChange={handleChangeEmail}
+            />
+          </Box>
+          <Box
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+          >
             <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <Stack spacing={3}>
-                <DatePicker
-                  id="outlined-birth-date"
-                  label="Birth Date"
-                  inputFormat="dd/MM/yyyy"
-                  views={['day', 'month', 'year']}
-                  mask="__/__/____"
-                  value={birthDate}
-                  onChange={handleChangeBirthDate}
-                  renderInput={params => <TextField {...params} />}
-                />
-              </Stack>
+              <DatePicker
+                id="outlined-birth-date"
+                label="Birth Date"
+                inputFormat="dd/MM/yyyy"
+                views={['day', 'month', 'year']}
+                mask="__/__/____"
+                value={birthDate}
+                onChange={handleChangeBirthDate}
+                renderInput={params => <TextField {...params} />}
+              />
             </LocalizationProvider>
             <TextField
               id="outlined-select-sex"
-              fullWidth
               select
               label="Sex"
               value={sex}
@@ -313,30 +356,28 @@ export default function UserForm() {
               id="outlined-basic-company"
               label="Company"
               variant="outlined"
-              fullWidth
               value={company}
               onChange={handleChangeCompany}
             />
-            <Container
-              className="user-buttons"
-              maxWidth="xs"
-              sx={{ display: 'flex', justifyContent: 'center' }}
+          </Box>
+          <Box
+            className="user-buttons"
+            maxWidth="xs"
+            sx={{ display: 'flex', justifyContent: 'center' }}
+          >
+            <Button
+              type="button"
+              variant="contained"
+              onClick={onClickCancelButton}
             >
-              <Button
-                type="button"
-                variant="contained"
-                onClick={onClickCancelButton}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" variant="contained">
-                Save
-              </Button>
-            </Container>
-          </Container>
+              Cancel
+            </Button>
+            <Button type="submit" variant="contained">
+              Save
+            </Button>
+          </Box>
         </Box>
-      </Container>
-      <Outlet />
+      </Box>
     </>
   );
 }

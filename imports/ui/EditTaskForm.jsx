@@ -3,7 +3,6 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 
 import { useTracker } from 'meteor/react-meteor-data';
 
-import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -15,7 +14,6 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import Checkbox from '@mui/material/Checkbox';
 
-import Header from './Header';
 import { getDateTimeFrom } from '/imports/helpers/dateHelpers';
 
 export default function EditTaskForm() {
@@ -24,14 +22,14 @@ export default function EditTaskForm() {
   const user = useTracker(() => Meteor.user());
 
   let taskId;
-  // Passing URL params
+  // URL params
   let params = useParams();
   if (params) {
     console.log('Edit Task Params');
     taskId = params.taskId;
   }
 
-  // Passing props from the caller
+  // Props from the caller
   let {
     state: { pathOrigin, task },
   } = useLocation();
@@ -44,20 +42,11 @@ export default function EditTaskForm() {
   const dateAt = task ? getDateTimeFrom(task.createdAt) : '';
   const disableCompleted = task?.status == 'In Progress' ? false : true;
 
-  // const [title, setTitle] = useState('Incluir Tarefa');
-
   const [nameTask, setNameTask] = useState(task?.text);
   const [descriptionTask, setDescriptionTask] = useState(task?.description);
-  const [creadtedDateTask, setCreatedDateTask] = useState(dateAt);
+  const [creadtedDateTask] = useState(dateAt);
   const [statusTask, setStatusTask] = useState(status);
   const [privateTask, setPrivateTask] = useState(private);
-
-  /*
-  console.log(`title: ${title}`);
-  console.log(`creadtedDate: ${creadtedDateTask}`);
-  console.log(`task: ${nameTask}`);
-  console.log(`description: ${descriptionTask}`);
-  */
 
   let navigate = useNavigate();
 
@@ -94,15 +83,18 @@ export default function EditTaskForm() {
     const statusAux = statusTask ? statusTask : 'Registered';
     const isPrivateAux = privateTask ? privateTask : false;
 
+    /*
     console.log(
       `text: ${nameTask} description: ${descriptionTask} status: ${statusAux} isPrivate: ${privateTask}`
     );
+     */
 
     // Production environment
     if (!task) {
       Meteor.call(
         'tasks.insert',
         nameTask,
+        user.username,
         descriptionTask,
         statusAux,
         isPrivateAux,
@@ -125,7 +117,6 @@ export default function EditTaskForm() {
         isPrivateAux,
         function (error) {
           if (error) {
-            console.log(error);
             console.log(`Erro na atualização da tarefa: ${error}`);
           } else {
             console.log(`Tarefa  ${nameTask} atualizada com sucesso!`);
@@ -133,14 +124,19 @@ export default function EditTaskForm() {
         }
       );
     }
-
     navigate(pathOrigin);
   };
 
   return (
     <>
-      <Header>📝️ Meteor Advanced To-Do List with React!</Header>
-      <Container component="editTask-main" maxWidth="md">
+      <Box
+        component="main"
+        maxWidth="xs"
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        sx={{ mt: 15, ml: 25 }}
+      >
         <Typography
           component="h1"
           variant="h5"
@@ -154,40 +150,44 @@ export default function EditTaskForm() {
           sx={{
             '& .MuiTextField-root': { m: 1, width: '400px' },
           }}
+          maxWidth="xs"
           noValidate
           autoComplete="off"
+          //onSubmit={onClickSignUp}
         >
-          <Container
-            align="center"
-            maxWidth="xs"
-            sx={{ display: 'flex', paddingLeft: '0px' }}
+          <Box
+            display="flex"
+            flexDirection="row"
+            justifyContent="center"
+            sx={{ ml: 12 }}
           >
-            <div>
-              <TextField
-                required
-                id="outlined-basic-text-task"
-                label="Task"
-                type="text"
-                variant="outlined"
-                value={nameTask}
-                onChange={handleChangeNameTask}
-                fullWidth
-              />
-            </div>
-            <div className="private-task">
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={privateTask}
-                    onChange={handleChangePrivateTask}
-                    inputProps={{ 'aria-label': 'controlled' }}
-                  />
-                }
-                label="Private"
-              />
-            </div>
-          </Container>
-          <Container component="main" maxWidth="xs">
+            <TextField
+              required
+              id="outlined-basic-text-task"
+              label="Task"
+              type="text"
+              variant="outlined"
+              value={nameTask}
+              onChange={handleChangeNameTask}
+              fullWidth
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={privateTask}
+                  onChange={handleChangePrivateTask}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                />
+              }
+              label="Private"
+            />
+          </Box>
+          <Box
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+          >
             <TextField
               required
               id="outlined-basic-description-task"
@@ -206,7 +206,7 @@ export default function EditTaskForm() {
               fullWidth
             />
             {taskId ? (
-              <Container>
+              <Box>
                 <FormControl
                   sx={{
                     width: '400px',
@@ -240,21 +240,15 @@ export default function EditTaskForm() {
                     />
                   </RadioGroup>
                 </FormControl>
-              </Container>
+              </Box>
             ) : (
               ''
             )}
-          </Container>
-          <Container
+          </Box>
+          <Box
             className="user-buttons"
             maxWidth="xs"
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItens: 'center',
-              paddingTop: '8px',
-              width: '400px',
-            }}
+            sx={{ display: 'flex', justifyContent: 'center' }}
           >
             <Button
               type="button"
@@ -270,9 +264,9 @@ export default function EditTaskForm() {
             >
               Save
             </Button>
-          </Container>
+          </Box>
         </Box>
-      </Container>
+      </Box>
     </>
   );
 }

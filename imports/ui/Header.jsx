@@ -4,8 +4,6 @@ import React from 'react';
 import Container from '@material-ui/core/Container';
 
 export default function Header({ children: title }) {
-  // console.log(title);
-
   return (
     <Container maxWidth="md">
       <header>

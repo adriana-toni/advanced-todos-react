@@ -78,7 +78,7 @@ export default function LoginForm() {
   return (
     <>
       <ThemeProvider theme={theme}>
-        <Container component="main" maxWidth="xs">
+        <Container component="main" maxWidth="xs" sx={{ mt: 15 }}>
           <CssBaseline />
           <Box
             sx={{
@@ -133,9 +133,7 @@ export default function LoginForm() {
               </Button>
               <Grid container>
                 <Grid item xs>
-                  <Link href="#" variant="body2">
-                    Forgot password?
-                  </Link>
+                  <NavLink to="/reset">{'Forgot password?'}</NavLink>
                 </Grid>
                 <Grid item>
                   <NavLink to="/user" state={{ pathOrigin: '/', user: null }}>

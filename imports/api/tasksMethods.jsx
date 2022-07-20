@@ -3,13 +3,14 @@ import { check } from 'meteor/check';
 import { TasksCollection } from '/imports/db/TasksCollection';
 
 Meteor.methods({
-  'tasks.insert'(text, description, status, isPrivate) {
-    console.log(`inside method: tasks.insert ${this.userId}`);
+  'tasks.insert'(text, userCreation, description, status, isPrivate) {
+    console.log(`inside method: tasks.insert ${this.userId} - ${userCreation}`);
     console.log(
       `text: ${text} description: ${description} status: ${status} isPrivate: ${isPrivate}`
     );
 
     check(text, String);
+    check(userCreation, String);
     check(description, String);
     check(status, String);
     check(isPrivate, Boolean);
@@ -25,6 +26,7 @@ Meteor.methods({
       isPrivate: isPrivate,
       createdAt: new Date(),
       userId: this.userId,
+      userCreation: userCreation,
     });
   },
 
