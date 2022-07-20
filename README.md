@@ -1,17 +1,19 @@
 # **React ToDo List com Meteor**
----
+
 Um aplicativo ToDo List desenvolvido com React utilizando a plataforma Meteor.
+
 
 ## Configuração
 
-- Clonar o repositório:
+- Clonar o repositório:<br>
 ``git clone https://github.com/adriana-toni/advanced-todos-react.git``
 
-- Vá para o diretório do projeto e instale as dependências
+- Vá para o diretório do projeto e instale as dependências<br>
 ``meteor npm install ``
 
-- Para executar o App
+- Para executar o App<br>
 ``meteor run``
+
 
 ## Características
 
@@ -22,20 +24,25 @@ Um aplicativo ToDo List desenvolvido com React utilizando a plataforma Meteor.
 - Restrições de visibilidade e pesquisa de tarefas através das Publicações do Meteor
 - Paginação de tarefas 
 
+
 ## Telas
 
 - Home Page
-<img src="https://github.com/adriana-toni/advanced-todos-react/blob/main/img/appForm.PNG" width=50% height=50%>
+<img src="https://github.com/adriana-toni/advanced-todos-react/blob/main/img/appForm.PNG">
+
+- User Home view
+<img src="https://github.com/adriana-toni/advanced-todos-react/blob/main/img/welcomeForm.PNG">
 
 - User (Insert/Edit Mode)
-<img src="https://github.com/adriana-toni/advanced-todos-react/blob/main/img/editTaskForm_insertMode.PNG" width=50% height=50%>
-<img src="https://github.com/adriana-toni/advanced-todos-react/blob/main/img/editTaskForm_editMode.PNG" width=50% height=50%>
+<img src="https://github.com/adriana-toni/advanced-todos-react/blob/main/img/userForm_insertMode.PNG">
+<img src="https://github.com/adriana-toni/advanced-todos-react/blob/main/img/userForm_editMode.PNG">
+
+- Task Home view
+<img src="https://github.com/adriana-toni/advanced-todos-react/blob/main/img/tasksForm.PNG">
 
 - Task (Insert/Edit Mode)
-<img src="https://github.com/adriana-toni/advanced-todos-react/blob/main/img/tasksForm.PNG" width=50% height=50%>
-
-- Navigation Drawer
-<img src="https://github.com/adriana-toni/advanced-todos-react/blob/main/img/welcomeForm.PNG" width=50% height=50%>
+<img src="https://github.com/adriana-toni/advanced-todos-react/blob/main/img/editTaskForm_insertMode.PNG">
+<img src="https://github.com/adriana-toni/advanced-todos-react/blob/main/img/editTaskForm_editMode.PNG">
 
 
 ## Para aprender
