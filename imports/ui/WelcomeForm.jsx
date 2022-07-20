@@ -99,7 +99,7 @@ export default function WelcomeForm() {
         }}
       >
         <Grid item xs={12} sm={6}>
-          <Card variant="elevation" elevation="10" sx={{ maxWidth: 250 }}>
+          <Card variant="elevation" elevation={10} sx={{ maxWidth: 250 }}>
             <CardContent>
               <Typography
                 gutterBottom
@@ -122,7 +122,7 @@ export default function WelcomeForm() {
         <Grid item xs={12} sm={6}>
           <Card
             variant="elevation"
-            elevation="10"
+            elevation={10}
             sx={{ maxWidth: 250, maxHeight: 115 }}
           >
             <CardContent>
@@ -147,7 +147,7 @@ export default function WelcomeForm() {
         <Grid item xs={12} sm={6}>
           <Card
             variant="elevation"
-            elevation="10"
+            elevation={10}
             sx={{ maxWidth: 250, maxHeight: 115 }}
           >
             <CardContent>

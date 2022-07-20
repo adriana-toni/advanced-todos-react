@@ -20,15 +20,17 @@ import ResetPasswordForm from '../ui/ResetPasswordForm';
 import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
 
-const drawerWidth = 100;
-
 Meteor.startup(() => {
   console.log('startup Lado Cliente');
+  console.log(this.user);
+
+  const drawerWidth = this.user ? 100 : 0;
+  console.log(`drawerWidth ${drawerWidth}`);
+
   render(
     <Router>
       <Box style={{ display: 'flex', flexDirection: 'column' }}>
         <AppBar
-          position="fixed"
           sx={{
             width: { sm: `calc(100% - ${drawerWidth}px)` },
             ml: { sm: `${drawerWidth}px` },
@@ -42,7 +44,6 @@ Meteor.startup(() => {
             width: { sm: drawerWidth },
             flexShrink: { sm: 0 },
           }}
-          aria-label="mailbox folders"
         >
           <NavBar />
         </Box>
