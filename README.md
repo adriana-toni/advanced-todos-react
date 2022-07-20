@@ -17,11 +17,11 @@ Um aplicativo ToDo List desenvolvido com React utilizando a plataforma Meteor.
 
 ## Características
 
-- Componentes utilizados na interação com o usuário baseados no pacote Material UI
-- Gestão de dados do usuário com o pacote Accounts do Meteor
-- Upload de foto do usuário utilizando base64 e com dado salvo no banco de dados MongoDB do Meteor
-- Navegação nas telas utilizando o pacote React Router
-- Restrições de visibilidade e pesquisa de tarefas através das Publicações do Meteor
+- Componentes utilizados na interação com o usuário baseados no pacote *Material UI*
+- Gestão de dados do usuário com o pacote *Accounts* do *Meteor*
+- Upload de foto do usuário utilizando *base64* e com dado salvo no banco de dados *MongoDB* do *Meteor*
+- Navegação nas telas utilizando o pacote *React Router*
+- Restrições de visibilidade e pesquisa de tarefas através das *Publicações* do *Meteor*
 - Paginação de tarefas 
 
 
